@@ -7,10 +7,10 @@
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
     "test": "scripts/test",
-    "postinstall": "yarn run build",
     "start": "node server.js"
   },
   "dependencies": {
+    "express": "^4.16.4",
     "serve-static": "^1.13.2",
     "vue": "^2.5.21"
   },
@@ -28,7 +28,10 @@
     "env": {
       "node": true
     },
-    "extends": ["plugin:vue/essential", "eslint:recommended"],
+    "extends": [
+      "plugin:vue/essential",
+      "eslint:recommended"
+    ],
     "rules": {},
     "parserOptions": {
       "parser": "babel-eslint"
@@ -39,7 +42,11 @@
       "autoprefixer": {}
     }
   },
-  "browserslist": ["> 1%", "last 2 versions", "not ie <= 8"],
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not ie <= 8"
+  ],
   "engines": {
     "node": "10.15.0"
   }
