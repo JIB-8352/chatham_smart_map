@@ -41,6 +41,6 @@
   },
   "browserslist": ["> 1%", "last 2 versions", "not ie <= 8"],
   "engines": {
-    "node": "10.x"
+    "node": "10.15.0"
   }
 }
