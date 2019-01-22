@@ -4,14 +4,17 @@
     <HelloWorld msg="Welcome to Your Vue.js App"/>
   </div>
 </template>
+<Console>
+</Console>
 
 <script>
 import HelloWorld from './components/HelloWorld.vue'
+import Console from './components/Console.vue'
 
 export default {
   name: 'app',
   components: {
-    HelloWorld
+    HelloWorld, Console
   }
 }
 </script>
