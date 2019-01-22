@@ -10,15 +10,15 @@
         hash: true
       }">
     </mapbox>
-    <Console>
-    </Console>
+    <console>
+    </console>
   </div>
 </template>
 
 
 <script>
 import Mapbox from 'mapbox-gl-vue';
-import Console from './components/Console.vue'
+import Console from './components/Console.vue';
 
 export default {
   name: 'app',
