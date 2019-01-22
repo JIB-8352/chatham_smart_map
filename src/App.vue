@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-      <mapbox 
+      <mapbox
       access-token="pk.eyJ1IjoicGNoYXdsYTgiLCJhIjoiY2pvb2IxeHhjMGFpbzNwcXJzbjkxenphbCJ9.PLLJazTRjDbljE9IniyWpg"
       :map-options="{
         container: 'map',
@@ -10,10 +10,11 @@
         hash: true
       }">
     </mapbox>
+    <Console>
+    </Console>
   </div>
 </template>
-<Console>
-</Console>
+
 
 <script>
 import Mapbox from 'mapbox-gl-vue';
