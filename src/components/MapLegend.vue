@@ -41,35 +41,6 @@ export default {
       line-height: 20px;
     }
 
-    s1 {
-        font-size: 12px;
-        line-height: 16px;
-        color: #a9a9a9;
-    }
-
-    a {
-      text-decoration: none;
-      color: #2dc4b2;
-    }
-
-    #map {
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        width: 100%;
-    }
-
-    #console {
-      position: absolute;
-      width: 270px;
-      margin: 10px;
-      padding: 8px 8px;
-      background-color: rgb(225,225,225);
-      box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
-      border-radius: 3px;
-      z-index: 0;
-    }
-
     .card {
       background-color: white;
       box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
@@ -142,6 +113,7 @@ export default {
       border-radius: 50%;
       background-color: #007cbf;
       opacity: 0.8;
+      margin-right: 6px;
     }
 
     #low_risk_label {
@@ -156,8 +128,4 @@ export default {
       width: 32%;
     }
 
-    .mapboxgl-ctrl-top-left .mapboxgl-ctrl {
-      margin: 20px 0 0 18px;
-      width: 270px;
-    }
 </style>
