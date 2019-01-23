@@ -3,6 +3,8 @@
     <mapbox
       :access-token="accessToken"
       :map-options="mapOptions"
+      :nav-control="navControl"
+      :geolocate-control="geoControl"
       @map-init="mapInitialized"
     >
     </mapbox>
@@ -30,6 +32,14 @@ export default {
         center: { lon: -81.2, lat: 32 },
         zoom: 9.6,
         hash: true
+      },
+      navControl: {
+        show: true,
+        position: 'bottom-right'
+      },
+      geoControl: {
+        show: true,
+        position: 'bottom-right'
       }
     };
   },
