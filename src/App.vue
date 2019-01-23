@@ -55,7 +55,9 @@ export default {
         if (marker) {
           marker.remove();
         }
-        marker = new mapboxgl.Marker()
+        marker = new mapboxgl.Marker( {
+          color: 'crimson'
+        })
           .setLngLat(ev.result.geometry.coordinates)
           .addTo(map);
       });
