@@ -7,7 +7,7 @@
                 <i class='material-icons'>bubble_chart</i>
                 <div>
                     <h2 class='no_margin_heading'>Sensors</h2>
-                    <s1>Display the sensors' locations on the map.</s1>
+                    <s1>Display the sensors' locations on map.</s1>
                 </div>
 
             </li>
@@ -15,7 +15,7 @@
                 <i class='material-icons'>waves</i>
                 <div>
                     <h2 class='no_margin_heading'>Inundation</h2>
-                    <s1>Display water-inundation levels layer on the map.</s1>
+                    <s1>Display water-inundation levels on map.</s1>
                 </div>
 
             </li>
@@ -23,7 +23,7 @@
                 <i class='material-icons'>graphic_eq</i>
                 <div>
                     <h2 class='no_margin_heading'>Predicted risk</h2>
-                    <s1>Display risk levels layers on the map.</s1>
+                    <s1>Display risk levels layers on map.</s1>
                 </div>
 
             </li>
