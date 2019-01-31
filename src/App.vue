@@ -6,6 +6,7 @@
       :nav-control="navControl"
       :geolocate-control="geoControl"
       @map-init="mapInitialized"
+      @map-load="mapLoaded"
     >
     </mapbox>
     <TheConsole />
@@ -14,7 +15,8 @@
 
 <script>
 import Mapbox from "mapbox-gl-vue";
-import TheConsole from "./components/TheConsole.vue";
+import TheConsole from "./components/TheConsole";
+import { addGeocoder, getSensorData } from "./helpers/helper";
 
 export default {
   name: "app",
@@ -45,27 +47,10 @@ export default {
   },
   methods: {
     mapInitialized(map) {
-      const geocoder = new MapboxGeocoder({
-        accessToken: this.accessToken
-      });
-      map.addControl(geocoder, "top-left");
-
-      let marker;
-      geocoder.on("result", function(ev) {
-        if (marker) {
-          marker.remove();
-        }
-        marker = new mapboxgl.Marker({
-          color: "crimson"
-        })
-          .setLngLat(ev.result.geometry.coordinates)
-          .addTo(map);
-      });
-      geocoder.on("clear", () => {
-        if (marker) {
-          marker.remove();
-        }
-      });
+      addGeocoder(map, this.accessToken);
+    },
+    mapLoaded() {
+      getSensorData();
     }
   }
 };
