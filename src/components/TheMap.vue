@@ -57,7 +57,7 @@ export default {
       getSensorData()
         .then(responses => {
           const sensorGeoJSON = parseSensorData(responses);
-          addSensorLayer(map, sensorGeoJSON); // addAndPulsatePoints(map, sensorGeoJSON);
+          addSensorLayer(map, sensorGeoJSON);
           geocoder.options.localGeocoder = query =>
             sensorGeocoder(query, sensorGeoJSON);
         })
