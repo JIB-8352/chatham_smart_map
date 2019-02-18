@@ -4,17 +4,33 @@
     <ConsoleLayersList />
     <div style="height: 6px;"></div>
     <ConsoleLegend />
+    <div style="height: 6px;"></div>
+    <console-card v-if="infoCardVisible" heading="SENSOR INFORMATION">
+    </console-card>
   </div>
 </template>
 
 <script>
 import ConsoleLayersList from "./ConsoleLayersList";
 import ConsoleLegend from "./ConsoleLegend";
+import ConsoleCard from "./ConsoleCard";
+import { eventBus } from "../main";
 
 export default {
   components: {
     ConsoleLayersList,
-    ConsoleLegend
+    ConsoleLegend,
+    ConsoleCard
+  },
+  data() {
+    return {
+      infoCardVisible: false
+    };
+  },
+  created() {
+    eventBus.$on("sensor-clicked", (selected, _) => {
+      this.infoCardVisible = selected;
+    });
   }
 };
 </script>

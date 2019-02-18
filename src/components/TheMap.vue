@@ -16,7 +16,7 @@ import { eventBus } from "../main";
 import Mapbox from "mapbox-gl-vue";
 
 import {
-  addPopupOnHover,
+  onSensorInteraction,
   addGeocoder,
   addSensorLayer,
   getSensorData,
@@ -72,7 +72,7 @@ export default {
           eventBus.$emit("stop-loading");
         });
 
-      addPopupOnHover(map);
+      onSensorInteraction(map, geocoder);
     },
     mapError() {
       eventBus.$emit("stop-loading");
