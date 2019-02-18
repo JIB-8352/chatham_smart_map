@@ -85,11 +85,13 @@ const addPopupOnHover = map => {
     while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
       coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
     }
+    const d = new Date(reading.resultTime)
+    const date_string = d ? d.toUTCString() : "N/A"
 
     const html = `
         <h4>${name} Sensor</h4>
         <div>Reading: ${reading.result}</div>
-        <div>Time: ${reading.resultTime}</div>
+        <div>Time: ${date_string}</div>
         `;
 
     // Populate the popup and set its coordinates. Adds a slight delay to the popup.
