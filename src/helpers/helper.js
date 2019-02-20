@@ -105,7 +105,7 @@ const onSensorInteraction = (map, geocoder) => {
 
     let html = `
         <h4>${name} Sensor</h4>
-        <div>Reading: ${reading.result}</div>
+        <div>Reading: ${reading.result} m</div>
         <div>Time: ${date_string}</div>
         `;
 
