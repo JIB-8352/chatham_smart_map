@@ -6,6 +6,7 @@
       <TheErrorModal :display="mapError" />
       <TheMap />
       <TheConsole v-if="mapLoaded" />
+      <Timelapse v-if="mapLoaded" />
     </v-app>
   </div>
 </template>
@@ -17,6 +18,7 @@ import TheErrorModal from "./components/TheErrorModal";
 import TheMap from "./components/TheMap";
 import TheProgressCircle from "./components/TheProgressCircle";
 import TheWarningAlert from "./components/TheWarningAlert";
+import Timelapse from "./components/Timelapse"
 
 export default {
   name: "app",
@@ -25,7 +27,8 @@ export default {
     TheErrorModal,
     TheMap,
     TheProgressCircle,
-    TheWarningAlert
+    TheWarningAlert,
+    Timelapse
   },
   data() {
     return {
@@ -40,7 +43,6 @@ export default {
     eventBus.$on("map-error", () => {
       this.mapError = true;
     });
-
     eventBus.$on("show-console", () => {
       this.mapLoaded = true;
     });
@@ -61,9 +63,17 @@ export default {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Card poopup for sensors */
+/* Card popup for sensors */
 .mapboxgl-popup-tip {
   border: 0px;
+}
+
+/* Pushes the popup away from sensor */
+.mapboxgl-popup-anchor-bottom {
+  top: -12px;
+}
+.mapboxgl-popup-anchor-top {
+  top: 12px;
 }
 
 /* Override default CSS for search box */
