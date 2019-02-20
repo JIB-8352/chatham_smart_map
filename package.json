@@ -15,6 +15,7 @@
     "encodeurl": "^1.0.2",
     "express": "^4.16.4",
     "mapbox-gl-vue": "^1.9.0",
+    "moment": "^2.24.0",
     "serve-static": "^1.13.2",
     "string-similarity": "^3.0.0",
     "vue": "^2.5.21",
