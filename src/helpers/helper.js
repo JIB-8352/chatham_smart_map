@@ -2,6 +2,7 @@ import axios from "axios";
 import encodeUrl from "encodeurl";
 import stringSimilarity from "string-similarity";
 import { eventBus } from "../main";
+import moment from 'moment';
 
 const addGeocoder = (map, accessToken) => {
   const geocoder = new MapboxGeocoder({ accessToken, trackProximity: true });
@@ -99,7 +100,8 @@ const onSensorInteraction = (map, geocoder) => {
       coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
     }
     const d = new Date(reading.resultTime)
-    const date_string = d ? d.toUTCString() : "N/A"
+    const current = moment()
+    const date_string = d ? moment(d).from(current) : "N/A"
 
     let html = `
         <h4>${name} Sensor</h4>
