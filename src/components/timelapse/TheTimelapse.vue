@@ -24,13 +24,10 @@ export default {
 #timelapse {
   position: absolute;
   display: flex;
-  bottom: 20px;
-  left: 85px;
+  bottom: 10px;
+  left: 0px;
+  margin: 10px;
   right: 80px;
   align-items: center;
-}
-
-#timelapse > * {
-  display: inline-block;
 }
 </style>

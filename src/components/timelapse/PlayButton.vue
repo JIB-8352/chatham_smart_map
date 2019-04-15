@@ -1,29 +1,19 @@
 <template>
-  <v-btn color="teal" dark depressed @click="toggle">
+  <v-btn color="white" @click="toggleIsPlaying">
     <v-icon v-if="isPlaying">pause</v-icon>
     <v-icon v-else>play_arrow</v-icon>
   </v-btn>
 </template>
+
 <script>
-import { eventBus } from "@/main";
+import { mapState, mapMutations } from "vuex";
+
 export default {
-  data() {
-    return {
-      isPlaying: false
-    };
-  },
-
   methods: {
-    toggle() {
-      this.isPlaying = !this.isPlaying;
-      eventBus.$emit("toggle-timelapse", this.isPlaying);
-    }
+    ...mapMutations("timelapse", ["toggleIsPlaying"])
   },
-
-  created() {
-    eventBus.$on("dates-selected", () => {
-      this.isPlaying = false; // pause the button (the bar has already been paused in TimeLapseBar)
-    });
+  computed: {
+    ...mapState("timelapse", ["isPlaying"])
   }
 };
 </script>
@@ -34,5 +24,6 @@ export default {
   width: 40px;
   border-radius: 3px;
   padding: 0px;
+  margin-left: 25px;
 }
 </style>

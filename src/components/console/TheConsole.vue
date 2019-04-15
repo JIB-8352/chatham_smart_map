@@ -1,16 +1,16 @@
 <template>
   <div id="console">
-    <div style="height: 48px;"></div>
+    <div style="min-height: 48px;"></div>
     <ConsoleLayersList />
-    <div style="height: 6px;"></div>
+    <div style="min-height: 6px;"></div>
     <ConsoleLegend />
-    <div style="height: 6px;"></div>
-    <InformationCard :sensor="infoCardSensor" v-if="infoCardVisible" />
+    <div style="min-height: 6px;"></div>
+    <InformationCard :sensor="sensor" v-if="sensor" />
   </div>
 </template>
 
 <script>
-import { eventBus } from "@/main";
+import { mapState } from "vuex";
 import ConsoleLayersList from "./ConsoleLayersList";
 import ConsoleLegend from "./ConsoleLegend";
 import InformationCard from "./InformationCard";
@@ -21,17 +21,8 @@ export default {
     ConsoleLegend,
     InformationCard
   },
-  data() {
-    return {
-      infoCardVisible: false,
-      infoCardSensor: undefined
-    };
-  },
-  created() {
-    eventBus.$on("sensor-clicked", (selected, sensor) => {
-      this.infoCardSensor = sensor;
-      this.infoCardVisible = selected;
-    });
+  computed: {
+    ...mapState("cons", ["sensor"])
   }
 };
 </script>
@@ -46,5 +37,8 @@ export default {
   box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
   border-radius: 3px;
   z-index: 0;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100% - 110px);
 }
 </style>

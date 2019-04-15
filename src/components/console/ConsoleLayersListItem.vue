@@ -1,7 +1,7 @@
 <template>
   <li
     :style="{ color: layer.selected ? layer.color : 'black' }"
-    @click="$emit('update-console', layer.id)"
+    @click="$emit('toggleLayers')"
   >
     <i class="material-icons">{{ layer.icon }}</i>
     <div>
@@ -24,7 +24,7 @@ export default {
 
 <style scoped>
 li {
-  padding-bottom: 5px;
+  margin-bottom: 5px;
   cursor: pointer;
 }
 
@@ -34,17 +34,17 @@ li > * {
 }
 
 li > div {
-  margin-left: 4px;
+  margin-left: 5px;
 }
 
 h2 {
-  font-size: 16px;
+  font-size: 15px;
   line-height: 18px;
   margin: 1.4px;
 }
 
 small {
-  font-size: 14px;
+  font-size: 13px;
   line-height: 18px;
   color: #a9a9a9;
 }

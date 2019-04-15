@@ -1,102 +1,152 @@
 <template>
-  <div>
-    <div class="datepicker-trigger">
-      <v-icon id="event-icon" large color="teal">event</v-icon>
-      <input
-        type="text"
-        id="datepicker-trigger"
-        prepend-inner-icon="event"
-        placeholder="Select dates"
-        :value="formatDates(dateOne, dateTwo)"
-      />
-
-      <AirbnbStyleDatepicker
-        :offset-y="-270"
-        :trigger-element-id="'datepicker-trigger'"
-        :mode="'range'"
-        :fullscreen-mobile="true"
-        :date-one="dateOne"
-        :date-two="dateTwo"
-        @date-one-selected="
-          val => {
-            dateOne = val;
-          }
-        "
-        @date-two-selected="
-          val => {
-            dateTwo = val;
-          }
-        "
-        @apply="onApply"
-      />
-    </div>
+  <div
+    class="datepicker-trigger"
+    id="datepicker-trigger"
+    :class="{ disabled: updatingData }"
+  >
+    <i class="material-icons">calendar_today</i>
+    <p class="first">{{ formattedDate(dateOne) }}</p>
+    <div class="vertical-line"></div>
+    <p class="second">{{ formattedDate(dateTwo) }}</p>
+    <AirbnbStyleDatepicker
+      :trigger-element-id="'datepicker-trigger'"
+      :mode="'range'"
+      :fullscreen-mobile="true"
+      :date-one="dateOne"
+      :date-two="dateTwo"
+      :end-date="endDate"
+      @date-one-selected="
+        val => {
+          setDateOne({ val });
+        }
+      "
+      @date-two-selected="
+        val => {
+          setDateTwo({ val });
+        }
+      "
+      @opened="onOpen"
+      @apply="onApply"
+      @closed="onClosed"
+      @cancelled="onCancelled"
+    />
   </div>
 </template>
 
 <script>
-import { eventBus } from "@/main";
-import { format, addMinutes, isToday, differenceInMinutes } from "date-fns";
-import { today, startDate } from "@/helpers/constants";
+import { mapState, mapMutations } from "vuex";
+import {
+  parse,
+  addMinutes,
+  isToday,
+  differenceInMinutes,
+  startOfDay,
+  format
+} from "date-fns";
+// We want onApply changes to occur if a user closes the date picker by clicking outside, so use
+// this variable to track if picker was closed by clicking outside.
+let applied = false;
 
 export default {
-  data() {
-    return {
-      dateFormat: "D MMM",
-      dateOne: "",
-      dateTwo: ""
-    };
-  },
   methods: {
-    formatDates(dateOne, dateTwo) {
-      let formattedDates = "";
-      if (dateOne) {
-        formattedDates = format(dateOne, this.dateFormat);
-      }
-      if (dateTwo) {
-        formattedDates += " - " + format(dateTwo, this.dateFormat);
-      }
-      return formattedDates;
-    },
     onApply() {
-      let earlyDate = new Date(this.dateOne);
-      let lateDate = new Date(this.dateTwo);
-      earlyDate = addMinutes(earlyDate, earlyDate.getTimezoneOffset()); // adjust date to user timezone
-      lateDate = addMinutes(lateDate, lateDate.getTimezoneOffset());
-      if (isToday(lateDate)) {
+      let startDate = parse(this.dateOne);
+      let endDate = parse(this.dateTwo); // not to be confused with this.endDate!
+      const minutesOffset = differenceInMinutes(new Date(), endDate);
+      if (isToday(startDate)) {
+        startDate = startOfDay(startDate);
+        endDate = new Date();
+      } else if (isToday(endDate)) {
         // if the latter date is today, make the time match current time
-        const minutesOffset = differenceInMinutes(new Date(), lateDate);
-        earlyDate = addMinutes(earlyDate, minutesOffset);
-        lateDate = addMinutes(lateDate, minutesOffset);
+        endDate = addMinutes(endDate, minutesOffset);
+        startDate = addMinutes(startDate, minutesOffset);
+      } else if (!minutesOffset) {
+        endDate = startDate;
       }
-      eventBus.$emit("dates-selected", earlyDate, lateDate);
-    }
+      this.$store.commit("timelapse/setIsPlaying", { isPlaying: false });
+      this.$store.commit("timelapse/setSliderVal", { sliderVal: 0 });
+      this.$store.commit("timelapse/setDates", { startDate, endDate });
+      applied = true;
+    },
+    onClosed() {
+      const oldDateOne = format(
+        this.$store.state.timelapse.startDate,
+        "YYYY-MM-DD"
+      );
+      const oldDateTwo = format(
+        this.$store.state.timelapse.endDate,
+        "YYYY-MM-DD"
+      );
+      if (
+        !applied &&
+        (oldDateOne !== this.dateOne || oldDateTwo !== this.dateTwo)
+      ) {
+        this.onApply();
+      }
+    },
+    onCancelled() {
+      // Makes sure that when hitting cancel, the dates DON'T get applied
+      applied = true;
+    },
+    onOpen() {
+      applied = false;
+      this.$store.commit("timelapse/setIsPlaying", { isPlaying: false });
+    },
+    formattedDate(date) {
+      return date ? format(date, "ddd, D MMM") : "";
+    },
+    ...mapMutations("picker", ["setDateOne", "setDateTwo"])
   },
-  created() {
-    this.dateTwo = format(today, "YYYY-MM-DD");
-    this.dateOne = format(startDate, "YYYY-MM-DD");
+  computed: {
+    ...mapState("picker", ["dateOne", "dateTwo", "endDate"]),
+    ...mapState("app", ["updatingData"])
   }
 };
 </script>
 
-<style>
-#event-icon {
-  display: inline-block;
-
-}
-input {
-    margin-right: 15px;
-    margin-left: 15px;
-    padding: 9px 8px;
-    border: 1px solid rgba(0, 0, 0, 0.2);
-    text-rendering: auto;
-    color: initial;
-    text-indent: 0px;
-    display: inline-block;
-    background: #fff;
-    font-weight: 400;
-    font-size: 12px;
-    line-height: normal;
-    font-family: system-ui;
+<style scoped>
+div.datepicker-trigger {
+  background-color: white;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+  padding: 5px;
+  height: 40px;
+  width: 260px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  cursor: pointer;
 }
 
+.first {
+  margin-left: 23px;
+  pointer-events: none;
+}
+
+i {
+  margin-left: 5px;
+  pointer-events: none;
+}
+
+.second {
+  pointer-events: none;
+}
+
+div.vertical-line {
+  margin-left: 12px;
+  margin-right: 12px;
+  width: 1px;
+  background-color: lightgrey;
+  height: 80%;
+}
+
+div.disabled {
+  background-color: #ccc;
+  pointer-events: none;
+}
+
+div[id^="airbnb-style-datepicker-wrapper"] {
+  bottom: 40px !important;
+  top: auto !important;
+}
 </style>

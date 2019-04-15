@@ -1,5 +1,7 @@
-import { eventBus } from "@/main";
-import { geocoderMatches, getPaintProperty, sensors } from "./helper";
+import store from "@/store";
+import Vue from "vue";
+import { getPaintProperty, sensors } from "./helper";
+import PopupContent from "@/components/PopupContent";
 
 const addGeocoder = (map, accessToken) => {
   const geocoder = new MapboxGeocoder({ accessToken, trackProximity: true });
@@ -12,12 +14,11 @@ const addGeocoder = (map, accessToken) => {
   geocoder.on("result", ev => {
     marker.remove();
     unselectSensor(map); // if a sensor is already selected
-    const matches = geocoderMatches(ev.result.place_name);
-    if (!matches) {
-      marker.setLngLat(ev.result.geometry.coordinates).addTo(map);
-    } else {
+    if (sensors.has(ev.result.id)) {
       // ev.result is the entire GeoJSON for the selected sensor
       selectSensor(ev.result.id, map, geocoder);
+    } else {
+      marker.setLngLat(ev.result.geometry.coordinates).addTo(map);
     }
   });
   geocoder.on("clear", () => {
@@ -28,12 +29,14 @@ const addGeocoder = (map, accessToken) => {
   return geocoder;
 };
 
-const onSensorInteraction = (map, geocoder) => {
+const addSensorInteractions = (map, geocoder) => {
   // Create a popup, but don't add it to the map yet.
   const popup = new mapboxgl.Popup({
     closeButton: false,
     closeOnClick: false
   });
+  let vuePopup;
+
   map.on("mouseenter", "outer_point", e => {
     // Change the cursor style as a UI indicator.
     map.getCanvas().style.cursor = "pointer";
@@ -42,27 +45,31 @@ const onSensorInteraction = (map, geocoder) => {
     const sensor = sensors.get(id);
     const coordinates = sensor.coordinates;
     const name = sensor.name;
-    const reading = sensor.reading;
     // Ensure that if the map is zoomed out such that multiple copies of the feature are visible,
     // the popup appears over the copy being pointed to.
     while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
       coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
     }
+
     const html = `
         <h4>${name}</h4>
-        <p>Sea Level: ${reading.result}</p>
-        <p>Last Measured: ${reading.resultTime}</p>
+        <div id="vue-popup-content"></div>
         `;
     // Populate the popup and set its coordinates.
     popup
       .setLngLat(coordinates)
       .setHTML(html)
       .addTo(map);
+
+    vuePopup = new Vue({
+      render: h => h(PopupContent, { props: { sensor } })
+    }).$mount("#vue-popup-content");
   });
 
   map.on("mouseleave", "outer_point", () => {
     map.getCanvas().style.cursor = "";
     popup.remove();
+    vuePopup.$destroy();
   });
 
   map.on("click", "outer_point", e => {
@@ -87,18 +94,27 @@ const onSensorInteraction = (map, geocoder) => {
 };
 
 const selectSensor = (id, map, geocoder) => {
+  // Since this method can be called even when getting sensor data fails, check if the layers were added.
+  if (!map.getLayer("outer_point") || !map.getLayer("inner_point")) {
+    return;
+  }
   const paintProperty = getPaintProperty(id);
   const sensor = sensors.get(id);
-  eventBus.$emit("sensor-clicked", true, sensor);
+  store.commit("cons/setSensor", { sensor });
+  store.commit("app/sensorSelected", { sensorIsSelected: true });
   geocoder.setInput(sensor.placeName);
   map.setPaintProperty("outer_point", "circle-color", paintProperty);
   map.setPaintProperty("inner_point", "circle-color", paintProperty);
 };
 
 const unselectSensor = map => {
+  // Since this method can be called even when getting sensor data fails, check if the layers were added.
+  if (!map.getLayer("outer_point") || !map.getLayer("inner_point")) {
+    return;
+  }
   const paintProperty = getPaintProperty();
-
-  eventBus.$emit("sensor-clicked", false);
+  store.commit("cons/setSensor", { undefined });
+  store.commit("app/sensorSelected", { sensorIsSelected: false });
   map.setPaintProperty("outer_point", "circle-color", paintProperty);
   map.setPaintProperty("inner_point", "circle-color", paintProperty);
 };
@@ -164,4 +180,4 @@ const addSensorLayer = (map, sensorGeoJSON) => {
   animateMarker();
 };
 
-export { addGeocoder, addSensorLayer, onSensorInteraction };
+export { addGeocoder, addSensorLayer, addSensorInteractions };

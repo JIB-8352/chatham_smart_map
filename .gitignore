@@ -20,3 +20,7 @@ yarn-error.log*
 *.sln
 *.sw*
 *.sublime*
+
+# Cypress test files
+tests/screenshots/
+tests/videos/

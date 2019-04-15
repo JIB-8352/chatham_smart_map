@@ -2,50 +2,29 @@
   <console-card heading="MAP LAYERS">
     <ul>
       <ConsoleLayersListItem
-        v-for="layer in layers"
-        :key="layer.id"
+        v-for="(layer, index) in layers"
+        :key="index"
         :layer="layer"
-        @update-console="updateConsole"
+        @toggleLayers="toggleLayers(index)"
       />
     </ul>
   </console-card>
 </template>
 
 <script>
-import { eventBus } from "@/main";
+import { mapState } from "vuex";
 import ConsoleCard from "./ConsoleCard";
 import ConsoleLayersListItem from "./ConsoleLayersListItem";
 
 export default {
   components: { ConsoleCard, ConsoleLayersListItem },
-  data() {
-    return {
-      layers: [
-        {
-          id: 1,
-          name: "Sensors",
-          color: "steelblue",
-          description: "Display water sensors on map.",
-          icon: "bubble_chart",
-          selected: true
-        },
-        {
-          id: 2,
-          name: "Inundation",
-          color: "dodgerblue",
-          description: "Display altitude-adjusted water levels.",
-          icon: "waves",
-          selected: false
-        }
-      ]
-    };
+  computed: {
+    ...mapState("cons", ["layers"])
   },
   methods: {
-    updateConsole(emitterId) {
-      this.layers.forEach(layer => {
-        layer.selected = layer.id === emitterId;
-      });
-      eventBus.$emit("update-legend", emitterId);
+    toggleLayers(index) {
+      this.$store.commit("cons/toggleLayers", { index });
+      this.$store.commit("app/layerSelected", { layerSelected: index });
     }
   }
 };
@@ -54,8 +33,6 @@ export default {
 <style scoped>
 ul {
   list-style: none;
-  padding-left: 15px;
-  margin-top: 14px;
-  margin-bottom: 14px;
+  padding-left: 0px;
 }
 </style>

@@ -12,17 +12,17 @@
 </template>
 
 <script>
-import { eventBus } from "../main";
 import Mapbox from "mapbox-gl-vue";
 
 import {
+  getSensorInformation,
   getSensorData,
-  parseSensorData,
+  parseSensorInformation,
   sensorGeocoder
 } from "@/helpers/helper";
 
 import {
-  onSensorInteraction,
+  addSensorInteractions,
   addGeocoder,
   addSensorLayer
 } from "@/helpers/map-helper";
@@ -54,35 +54,45 @@ export default {
   },
   methods: {
     mapLoaded(map) {
-      eventBus.$emit("show-console");
+      // Expose the map object to window so that Cypress can use it.
+      window.map = map;
+      this.$store.commit("app/showConsole");
+
       const geocoder = addGeocoder(map, this.accessToken);
 
-      getSensorData()
+      getSensorInformation()
         .then(responses => {
-          const sensorGeoJSON = parseSensorData(responses);
+          const sensorGeoJSON = parseSensorInformation(responses.data.value);
           addSensorLayer(map, sensorGeoJSON);
           geocoder.options.localGeocoder = query =>
             sensorGeocoder(query, sensorGeoJSON);
+          addSensorInteractions(map, geocoder);
+
+          return getSensorData().finally(() => {
+            this.$store.commit("app/updatingData", {
+              updatingData: false
+            });
+          });
         })
         .catch(() => {
           // This will catch ALL errors
-          eventBus.$emit(
-            "warning-alert",
-            "We encountered an error while fetching sensor data. You may still use the map."
-          );
+          this.$store.commit("app/showWarning", {
+            warningText:
+              "We encountered an error while fetching sensor data. You may still use the map."
+          });
         })
         .finally(() => {
-          eventBus.$emit("stop-loading");
+          this.$store.commit("app/stopLoading");
         });
-
-      onSensorInteraction(map, geocoder);
     },
     mapError() {
-      eventBus.$emit("stop-loading");
-      eventBus.$emit("map-error");
+      this.$store.commit("app/stopLoading");
+      this.$store.commit("app/mapError");
     },
     geolocateError() {
-      eventBus.$emit("warning-alert", "We can't seem to locate you right now.");
+      this.$store.commit("app/showWarning", {
+        warningText: "We can't seem to locate you right now."
+      });
     }
   }
 };

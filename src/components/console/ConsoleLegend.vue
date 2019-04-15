@@ -1,59 +1,27 @@
 <template>
   <console-card heading="MAP LEGEND">
-    <div class="legend_row" v-for="legend in legends" :key="legend.id">
+    <div class="legend_row" v-for="(layer, index) in layers" :key="index">
       <span
-        :style="{ display: legend.displayed ? 'block' : 'none' }"
-        v-html="legend.html"
+        :style="{ display: layer.legend_displayed ? 'block' : 'none' }"
+        v-html="layer.legend_html"
       ></span>
     </div>
   </console-card>
 </template>
 
 <script>
-import { eventBus } from "@/main";
+import { mapState } from "vuex";
 import ConsoleCard from "./ConsoleCard";
 
 export default {
   components: { ConsoleCard },
-  data() {
-    return {
-      legends: [
-        {
-          id: 1,
-          html: `<div class="label" id="sensor"></div>
-      <p class="label" style="font-size:16px">Sea-level sensors</p>`,
-          displayed: true
-        },
-        {
-          id: 2,
-          html: `<div class="colors"></div>
-      <div style="overflow: hidden;">
-        <p class="label third">5ft</p>
-        <p class="label third">10ft</p>
-        <p class="label third">15ft</p>
-      </div>`,
-          displayed: false
-        }
-      ]
-    };
-  },
-  created() {
-    eventBus.$on("update-legend", emitterId => {
-      this.legends.forEach(legend => {
-        legend.displayed = legend.id === emitterId || legend.id === 1; // always display the first legend
-      });
-    });
+  computed: {
+    ...mapState("cons", ["layers"])
   }
 };
 </script>
 
 <style scoped>
-.legend_row {
-  margin: 5px;
-  margin-left: 15px;
-  margin-right: 0.7em;
-}
-
 .legend_row >>> .label {
   display: inline-block;
   text-align: center;

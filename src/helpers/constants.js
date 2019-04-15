@@ -1,6 +1,12 @@
 import { subDays } from "date-fns";
 
 const today = new Date();
-const startDate = subDays(today, 1); // yesterday
+const yesterday = subDays(today, 1); // yesterday
 
-export { today, startDate };
+const datastreamColors = {
+  "Water Level": "#007CBF",
+  "Air Pressure": "#FFD700",
+  "Air Temperature": "#BA55D3"
+};
+
+export { yesterday, today, datastreamColors };

@@ -1,0 +1,26 @@
+{
+  "root": true,
+  "env": {
+    "node": true,
+    "es6": true
+  },
+  "extends": [
+    "plugin:vue/essential",
+    "eslint:recommended",
+    "plugin:prettier/recommended"
+  ],
+  "rules": {},
+  "parserOptions": {
+    "parser": "babel-eslint"
+  },
+  "globals": {
+    "mapboxgl": "readonly",
+    "MapboxGeocoder": "readonly",
+    "cy": "readonly",
+    "it": "readonly",
+    "describe": "readonly",
+    "expect": "readonly",
+    "before": "readonly",
+    "beforeEach": "readonly"
+  }
+}

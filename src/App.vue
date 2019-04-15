@@ -1,18 +1,18 @@
 <template>
   <div id="app">
     <v-app>
-      <TheProgressCircle v-if="loadingData" />
+      <TheProgressCircle v-if="loading" />
       <TheWarningAlert :text="warningText" v-if="showWarning" />
       <TheErrorModal :display="mapError" />
       <TheMap />
       <TheConsole v-if="mapLoaded" />
-      <TheTimelapse v-if="mapLoaded" />
+      <TheTimelapse v-if="mapLoaded" v-show="timelapseMode" />
     </v-app>
   </div>
 </template>
 
 <script>
-import { eventBus } from "@/main";
+import { mapState, mapGetters } from "vuex";
 import TheConsole from "@/components/console/TheConsole";
 import TheErrorModal from "@/components/TheErrorModal";
 import TheMap from "@/components/TheMap";
@@ -30,32 +30,20 @@ export default {
     TheWarningAlert,
     TheTimelapse
   },
-  data() {
-    return {
-      loadingData: true,
-      mapError: false,
-      mapLoaded: false,
-      showWarning: false,
-      warningText: ""
-    };
-  },
-  created() {
-    eventBus.$on("map-error", () => {
-      this.mapError = true;
-    });
-    eventBus.$on("show-console", () => {
-      this.mapLoaded = true;
-    });
-    eventBus.$on("stop-loading", () => {
-      this.loadingData = false;
-    });
-    eventBus.$on("warning-alert", warningText => {
-      this.warningText = warningText;
-      this.showWarning = true;
-    });
+  computed: {
+    ...mapState("app", [
+      "loading",
+      "mapError",
+      "mapLoaded",
+      "showWarning",
+      "timelapseMode",
+      "warningText"
+    ]),
+    ...mapGetters("app", ["timelapseMode"])
   }
 };
 </script>
+
 <style>
 #app {
   font-family: Roboto, Arial, sans-serif;
@@ -66,6 +54,7 @@ export default {
 /* Override this property set by Vuetify */
 p {
   margin-bottom: 0px;
+  font-size: 14px;
 }
 
 /* Card popup for sensors */
@@ -88,9 +77,20 @@ p {
   width: 309px;
 }
 
+/* Override default CSS for text in search box */
+.mapboxgl-ctrl-geocoder input[type="text"] {
+  font-size: 13px;
+  padding-left: 35px;
+}
+
+/* Override default CSS for popup */
+.mapboxgl-popup {
+  z-index: 1;
+}
+
 /* Override default CSS for slider's thumb label */
 .v-slider__thumb-label {
-  transform: translate(-70px, -16px);
+  transform: translate(-70px, -18px);
   border-radius: 20px;
   z-index: 2;
   width: 145px !important;
@@ -107,7 +107,15 @@ p {
   height: 0;
   border-left: 5px solid transparent;
   border-right: 5px solid transparent;
-  transform: translate(-5px, -16px);
-  border-top: 5px solid #009688;
+  transform: translate(-5px, -18px);
+  border-top: 5px solid #9e9e9e;
+}
+
+.v-slider {
+  cursor: pointer;
+}
+
+.v-slider input {
+  cursor: pointer;
 }
 </style>
