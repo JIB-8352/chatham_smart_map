@@ -1,5 +1,5 @@
 <template>
-  <v-btn color="white" @click="toggleIsPlaying">
+  <v-btn color="white" @click="toggleIsPlaying" :disabled="updatingData">
     <v-icon v-if="isPlaying">pause</v-icon>
     <v-icon v-else>play_arrow</v-icon>
   </v-btn>
@@ -13,7 +13,8 @@ export default {
     ...mapMutations("timelapse", ["toggleIsPlaying"])
   },
   computed: {
-    ...mapState("timelapse", ["isPlaying"])
+    ...mapState("timelapse", ["isPlaying"]),
+    ...mapState("app", ["updatingData"])
   }
 };
 </script>
@@ -25,5 +26,8 @@ export default {
   border-radius: 3px;
   padding: 0px;
   margin-left: 25px;
+}
+.theme--light.v-btn.v-btn--disabled:not(.v-btn--icon):not(.v-btn--flat):not(.v-btn--outline) {
+  background-color: #ccc !important;
 }
 </style>

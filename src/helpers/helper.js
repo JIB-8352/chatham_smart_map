@@ -212,6 +212,26 @@ const getSensorData = () => {
     );
 };
 
+const removeCrosshair = (chart, { seriesIndex, dataIndex }) => {
+  chart.series[seriesIndex].data[dataIndex].setState();
+  chart.tooltip.hide();
+  return [];
+};
+
+const addCrosshair = (chart, { seriesIndex, dataIndex }) => {
+  chart.series[seriesIndex].data[dataIndex].setState("hover");
+  chart.tooltip.refresh(chart.series[seriesIndex].data[dataIndex]);
+  return [
+    {
+      color: "#cccccc",
+      width: 1,
+      value: chart.series[seriesIndex].data[dataIndex].x,
+      zIndex: 2,
+      className: "highcharts-crosshair highcharts-crosshair-thin undefined"
+    }
+  ];
+};
+
 store.watch(
   (state, getters) => getters["timelapse/times"],
   // eslint-disable-next-line no-unused-vars
@@ -253,5 +273,7 @@ export {
   getSensorData,
   parseSensorInformation,
   sensorGeocoder,
-  sensors
+  sensors,
+  removeCrosshair,
+  addCrosshair
 };

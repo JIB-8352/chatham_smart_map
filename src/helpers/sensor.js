@@ -21,28 +21,38 @@ export default class Sensor {
 
     return this.datastreams.map(datastream => {
       const { name, color, observations, unitHtml } = datastream;
+      const plotLines = this.plotLines[name];
       let series = [];
       let data = [];
-      observations.forEach(observation => {
-        if (observation) {
-          const x = new Date(observation.resultTime).getTime();
-          const y = observation.result;
-          data.push({ x, y });
-        } else if (data.length) {
-          data.reverse();
-          series.push({ data, color, name });
-          data = [];
-        }
-      });
+      let dataMapping = [];
+      observations
+        .slice()
+        .reverse()
+        .forEach(observation => {
+          if (observation) {
+            const x = new Date(observation.resultTime).getTime();
+            const y = observation.result;
+            data.push({ x, y });
+            dataMapping.push({
+              seriesIndex: series.length,
+              dataIndex: data.length - 1
+            });
+          } else {
+            dataMapping.push(undefined);
+            if (data.length) {
+              series.push({ data, color, name });
+              data = [];
+            }
+          }
+        });
       if (data.length) {
-        data.reverse();
         series.push({ data, color, name });
       }
       const title = series.length
         ? `${name} Data`
         : `No ${name} data available in selected time interval`;
 
-      return { title, series, unitHtml };
+      return { title, series, unitHtml, plotLines, dataMapping };
     });
   }
 
@@ -80,6 +90,29 @@ export default class Sensor {
     }
   }
 
+  get plotLines() {
+    return {
+      "Water Level": [
+        {
+          color: "red",
+          width: 2,
+          value: +Math.random().toFixed(2),
+          dashStyle: "shortdash",
+          zIndex: 5,
+          label: {
+            x: -1,
+            align: "right",
+            text: "DANGER",
+            style: {
+              color: "red",
+              fontSize: "12px",
+              fontStyle: "italic"
+            }
+          }
+        }
+      ]
+    };
+  }
   // Follows Carmen GeoJSON format:
   get geoJSON() {
     return {
