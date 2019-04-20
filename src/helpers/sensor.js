@@ -83,8 +83,7 @@ export default class Sensor {
               : "MMMM Do h:mm aa"
           );
       const inundation =
-        observation.result * inundationDemoMultiplier +
-        inundationDemoBoost;
+        observation.result * inundationDemoMultiplier + inundationDemoBoost;
       return {
         result,
         resultTime,
