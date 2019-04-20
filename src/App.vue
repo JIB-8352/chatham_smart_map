@@ -71,6 +71,14 @@ p {
   top: 12px;
 }
 
+.mapboxgl-popup-anchor-right {
+  left: -12px;
+}
+
+.mapboxgl-popup-anchor-left {
+  left: 12px;
+}
+
 /* Override default CSS for search box */
 .mapboxgl-ctrl-top-left .mapboxgl-ctrl {
   margin: 20px 0 0 18px;

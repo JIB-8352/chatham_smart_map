@@ -6,10 +6,10 @@ const yesterday = subDays(today, 1); // yesterday
 const inundationDemoBoost = 12;
 const inundationDemoMultiplier = 12;
 
-const datastreamColors = {
-  "Water Level": "#007CBF",
-  "Air Pressure": "#FFD700",
-  "Air Temperature": "#BA55D3"
+const datastreamMetadata = {
+  "Water Level": { color: "#007CBF" },
+  "Air Pressure": { color: "#FFD700" },
+  "Air Temperature": { color: "#BA55D3", unitHtml: "&#8451;" }
 };
 
 export {
@@ -17,7 +17,7 @@ export {
   today,
   inundationDemoBoost,
   inundationDemoMultiplier,
-  datastreamColors
+  datastreamMetadata
 };
 
 //DEMO VALUES//
