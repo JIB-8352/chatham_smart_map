@@ -26,8 +26,7 @@ import {
   addGeocoder,
   addSensorLayer,
   addInundationLayer,
-  updateSensorGeoJSON,
-  displayInundationLayer
+  updateSensorGeoJSON
 } from "@/helpers/map-helper";
 
 export default {
@@ -72,31 +71,36 @@ export default {
             sensorGeocoder(query, sensorGeoJSON);
           addSensorInteractions(map, geocoder);
 
+          this.$store.watch(
+            ({ timelapse }) => timelapse.sliderVal,
+            () => {
+              updateSensorGeoJSON(map);
+            }
+          );
+          this.$store.watch(
+            ({ app }) => app.updatingData,
+            updatingData => {
+              if (!updatingData) {
+                updateSensorGeoJSON(map);
+              }
+            }
+          );
+          this.$store.watch(
+            ({ app }) => app.layerSelected,
+            layerSelected => {
+              const visibilityStr = layerSelected === 1 ? "visible" : "none";
+              map.setLayoutProperty(
+                "inundation_heat",
+                "visibility",
+                visibilityStr
+              );
+            }
+          );
+
           return getSensorData().finally(() => {
             this.$store.commit("app/updatingData", {
               updatingData: false
             });
-            updateSensorGeoJSON(map);
-            this.$store.watch(
-              ({ timelapse }) => timelapse.sliderVal,
-              () => {
-                updateSensorGeoJSON(map);
-              }
-            );
-            this.$store.watch(
-              ({ app }) => app.updatingData,
-              updatingData => {
-                if (!updatingData) {
-                  updateSensorGeoJSON(map);
-                }
-              }
-            );
-            this.$store.watch(
-              ({ cons }) => cons.layers[1].selected,
-              isSelected => {
-                displayInundationLayer(map, isSelected);
-              }
-            );
           });
         })
         .catch(() => {

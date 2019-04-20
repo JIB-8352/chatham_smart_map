@@ -227,22 +227,10 @@ const updateSensorGeoJSON = map => {
   });
 };
 
-const displayInundationLayer = (map, isSelected) => {
-  let visibilityStr = "";
-  if (isSelected) {
-    visibilityStr = "visible";
-  } else {
-    visibilityStr = "none";
-  }
-
-  map.setLayoutProperty("inundation_heat", "visibility", visibilityStr);
-};
-
 export {
   addGeocoder,
   addSensorLayer,
   addSensorInteractions,
   addInundationLayer,
-  updateSensorGeoJSON,
-  displayInundationLayer
+  updateSensorGeoJSON
 };
