@@ -19,8 +19,8 @@ const state = {
       legend_html: `<div class="colors"></div>
       <div style="overflow: hidden;">
         <p class="label third">5ft</p>
-        <p class="label third">10ft</p>
         <p class="label third">15ft</p>
+        <p class="label third">25ft</p>
       </div>`,
       legend_displayed: false
     }

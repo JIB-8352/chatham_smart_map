@@ -24,7 +24,10 @@ import {
 import {
   addSensorInteractions,
   addGeocoder,
-  addSensorLayer
+  addSensorLayer,
+  addInundationLayer,
+  updateSensorGeoJSON,
+  displayInundationLayer
 } from "@/helpers/map-helper";
 
 export default {
@@ -64,6 +67,7 @@ export default {
         .then(responses => {
           const sensorGeoJSON = parseSensorInformation(responses.data.value);
           addSensorLayer(map, sensorGeoJSON);
+          addInundationLayer(map);
           geocoder.options.localGeocoder = query =>
             sensorGeocoder(query, sensorGeoJSON);
           addSensorInteractions(map, geocoder);
@@ -72,6 +76,27 @@ export default {
             this.$store.commit("app/updatingData", {
               updatingData: false
             });
+            updateSensorGeoJSON(map);
+            this.$store.watch(
+              ({ timelapse }) => timelapse.sliderVal,
+              () => {
+                updateSensorGeoJSON(map);
+              }
+            );
+            this.$store.watch(
+              ({ app }) => app.updatingData,
+              updatingData => {
+                if (!updatingData) {
+                  updateSensorGeoJSON(map);
+                }
+              }
+            );
+            this.$store.watch(
+              ({ cons }) => cons.layers[1].selected,
+              isSelected => {
+                displayInundationLayer(map, isSelected);
+              }
+            );
           });
         })
         .catch(() => {
