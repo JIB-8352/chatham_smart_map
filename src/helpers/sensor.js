@@ -1,5 +1,9 @@
 import { distanceInWordsToNow, format } from "date-fns";
 import store from "@/store";
+import {
+  inundationDemoBoost,
+  inundationDemoMultiplier
+} from "@/helpers/constants";
 
 export default class Sensor {
   constructor(id, coordinates, name, description, datastreams) {
@@ -58,7 +62,7 @@ export default class Sensor {
 
   get waterLevelReading() {
     if (store.state.app.updatingData) {
-      return { result: "Loading...", resultTime: "Loading..." };
+      return { result: "Loading...", resultTime: "Loading...", inundation: 0 };
     }
     // We made sure that water level was the first datastream:
     const { observations, unitSymbol } = this.datastreams[0];
@@ -78,14 +82,18 @@ export default class Sensor {
               ? "M/DD/YYYY h:mm aa"
               : "MMMM Do h:mm aa"
           );
+      const inundation =
+        observation.result * inundationDemoMultiplier + inundationDemoBoost;
       return {
         result,
-        resultTime
+        resultTime,
+        inundation
       };
     } else {
       return {
         resultTime: "N/A",
-        result: "No reading"
+        result: "No reading",
+        inundation: 0
       };
     }
   }
@@ -123,7 +131,8 @@ export default class Sensor {
         coordinates: this.coordinates
       },
       properties: {
-        description: this.description
+        description: this.description,
+        inundation: this.waterLevelReading.inundation
       },
       place_name: this.placeName,
       place_type: ["place"],

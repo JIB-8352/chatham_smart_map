@@ -53,9 +53,16 @@ const parseSensorInformation = responses =>
 
     const sensor = new Sensor(id, coordinates, name, description, datastreams);
     sensors.set(id, sensor);
-
     return sensor.geoJSON;
   });
+
+const getUpdatedGeoJSON = () => {
+  const updatedSensorGeoJSON = [];
+  for (let sensor of sensors.values()) {
+    updatedSensorGeoJSON.push(sensor.geoJSON);
+  }
+  return updatedSensorGeoJSON;
+};
 
 // Assumes that no sensor has an id of -99
 const getPaintProperty = (id = -99) => [
@@ -272,6 +279,7 @@ export {
   getSensorInformation,
   getSensorData,
   parseSensorInformation,
+  getUpdatedGeoJSON,
   sensorGeocoder,
   sensors,
   removeCrosshair,
