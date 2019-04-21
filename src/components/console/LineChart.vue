@@ -1,5 +1,7 @@
 <template>
-  <highcharts :options="chartOptions" :callback="chartLoaded"></highcharts>
+  <div @mouseover="mouseOver" @mouseout="mouseout">
+    <highcharts :options="chartOptions" :callback="chartLoaded"></highcharts>
+  </div>
 </template>
 
 <script>
@@ -48,7 +50,7 @@ export default {
       this.$store.watch(
         ({ timelapse }) => timelapse.sliderVal,
         sliderVal => {
-          if (!chart.series || !this.series.length) {
+          if (!chart.series || !this.series.length || this.userControls) {
             return;
           }
           if (this.index) {
@@ -90,6 +92,11 @@ export default {
           this.movingLine = [];
           return;
         }
+        for (let halo of jQuery("path.highcharts-halo")) {
+          jQuery(halo)
+            .parent()
+            .css("display", "none");
+        }
         if (this.index) {
           const newIndex = this.dataMapping[
             this.$store.state.timelapse.sliderVal
@@ -97,9 +104,29 @@ export default {
           if (newIndex) {
             this.movingLine = addCrosshair(chart, newIndex);
             this.index = newIndex;
+          } else {
+            for (let tooltipBox of jQuery("g.highcharts-tooltip")) {
+              jQuery(tooltipBox).attr("transform", "translate(0,-999)");
+            }
+            for (let tooltipText of jQuery(
+              "div.highcharts-label.highcharts-tooltip.highcharts-color-undefined"
+            )) {
+              jQuery(tooltipText).css("top", "-999px");
+            }
+            this.index = undefined;
+            this.movingLine = [];
           }
         }
       });
+    },
+    mouseOver() {
+      this.userControls = true;
+      if (this.movingLine.length) {
+        this.movingLine = [];
+      }
+    },
+    mouseout() {
+      this.userControls = false;
     }
   },
   computed: {
@@ -121,8 +148,11 @@ export default {
           labels: {
             formatter: function() {
               if (this.isFirst || this.isLast) {
-                return format(this.value, "MMM D h:mm a");
+                return format(this.value, "M/d h:mm a");
               }
+            },
+            style: {
+              "font-size": "10px"
             }
           },
           plotLines: this.movingLine
