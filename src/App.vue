@@ -93,7 +93,7 @@ p {
 
 /* Override default CSS for popup */
 .mapboxgl-popup {
-  z-index: 1;
+  z-index: 2;
 }
 
 /* Override default CSS for slider's thumb label */

@@ -228,6 +228,13 @@ const removeCrosshair = (chart, { seriesIndex, dataIndex }) => {
 const addCrosshair = (chart, { seriesIndex, dataIndex }) => {
   chart.series[seriesIndex].data[dataIndex].setState("hover");
   chart.tooltip.refresh(chart.series[seriesIndex].data[dataIndex]);
+  setTimeout(() => {
+    for (let halo of jQuery(
+      `g.highcharts-markers.highcharts-series-${seriesIndex}`
+    )) {
+      jQuery(halo).css("display", "");
+    }
+  }, 50);
   return [
     {
       color: "#cccccc",
