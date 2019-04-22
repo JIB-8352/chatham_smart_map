@@ -108,11 +108,6 @@ export default {
             for (let tooltipBox of jQuery("g.highcharts-tooltip")) {
               jQuery(tooltipBox).attr("transform", "translate(0,-999)");
             }
-            for (let tooltipText of jQuery(
-              "div.highcharts-label.highcharts-tooltip.highcharts-color-undefined"
-            )) {
-              jQuery(tooltipText).css("top", "-999px");
-            }
             this.index = undefined;
             this.movingLine = [];
           }

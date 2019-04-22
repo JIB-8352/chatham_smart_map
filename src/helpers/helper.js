@@ -229,12 +229,18 @@ const addCrosshair = (chart, { seriesIndex, dataIndex }) => {
   chart.series[seriesIndex].data[dataIndex].setState("hover");
   chart.tooltip.refresh(chart.series[seriesIndex].data[dataIndex]);
   setTimeout(() => {
-    for (let halo of jQuery(
-      `g.highcharts-markers.highcharts-series-${seriesIndex}`
-    )) {
-      jQuery(halo).css("display", "");
+    for (let halo of jQuery("path.highcharts-halo")) {
+      const parentClass = jQuery(halo)
+        .parent()
+        .attr("class");
+      if (parentClass.includes(`highcharts-series-${seriesIndex}`)) {
+        jQuery(halo)
+          .parent()
+          .css("display", "");
+      }
     }
-  }, 50);
+  }, 25);
+
   return [
     {
       color: "#cccccc",
