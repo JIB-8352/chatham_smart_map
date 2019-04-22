@@ -1,13 +1,16 @@
 import { distanceInWordsToNow, format } from "date-fns";
 import store from "@/store";
+import {
+  inundationDemoBoost,
+  inundationDemoMultiplier
+} from "@/helpers/constants";
 
 export default class Sensor {
-  constructor(id, coordinates, name, description, elevation, datastreams) {
+  constructor(id, coordinates, name, description, datastreams) {
     this.id = id;
     this.coordinates = coordinates;
     this.name = `${name} Sensor`;
     this.description = description;
-    this.elevation = elevation;
     this.datastreams = datastreams;
   }
 
@@ -17,45 +20,58 @@ export default class Sensor {
 
   get chartDatastreams() {
     if (store.state.app.updatingData) {
-      return this.datastreams.map(datastream => {
-        const { name, color } = datastream;
-        return { name, color };
-      });
+      return [{ title: "Loading chart data..." }];
     }
 
     return this.datastreams.map(datastream => {
-      const { name, color, observations } = datastream;
-      const data = observations.reduce((filtered, observation) => {
-        if (observation) {
-          const x = new Date(observation.resultTime).getTime();
-          const y = observation.result;
-          filtered.push({ x, y });
-        }
-        return filtered;
-      }, []);
-      data.reverse();
+      const { name, color, observations, unitHtml } = datastream;
+      const plotLines = this.plotLines[name];
+      let series = [];
+      let data = [];
+      let dataMapping = [];
+      observations
+        .slice()
+        .reverse()
+        .forEach(observation => {
+          if (observation) {
+            const x = new Date(observation.resultTime).getTime();
+            const y = observation.result;
+            data.push({ x, y });
+            dataMapping.push({
+              seriesIndex: series.length,
+              dataIndex: data.length - 1
+            });
+          } else {
+            dataMapping.push(undefined);
+            if (data.length) {
+              series.push({ data, color, name });
+              data = [];
+            }
+          }
+        });
+      if (data.length) {
+        series.push({ data, color, name });
+      }
+      const title = series.length
+        ? `${name} Data`
+        : `No ${name} data available in selected time interval`;
 
-      return { name, color, data };
+      return { title, series, unitHtml, plotLines, dataMapping };
     });
   }
 
   get waterLevelReading() {
     if (store.state.app.updatingData) {
-      return { result: "Loading...", resultTime: "Loading..." };
+      return { result: "Loading...", resultTime: "Loading...", inundation: 0 };
     }
-    // Find the water level datastream
-    const datastream = this.datastreams.find(
-      datastream => datastream.name === "Water Level"
-    );
-    const { observations, unitSymbol } = datastream;
+    // We made sure that water level was the first datastream:
+    const { observations, unitSymbol } = this.datastreams[0];
     // observations array is reversed - observations are present in descending order of resultTime,
     // take this into account when we index into it.
     const observation =
       observations[observations.length - 1 - store.state.timelapse.sliderVal];
     if (observation) {
-      const result = `${(this.elevation + observation.result).toFixed(
-        3
-      )} ${unitSymbol}`;
+      const result = `${observation.result} ${unitSymbol}`;
       const resultTime = store.getters["timelapse/present"]
         ? distanceInWordsToNow(observation.resultTime, {
             addSuffix: true
@@ -66,18 +82,45 @@ export default class Sensor {
               ? "M/DD/YYYY h:mm aa"
               : "MMMM Do h:mm aa"
           );
+      const inundation =
+        observation.result * inundationDemoMultiplier + inundationDemoBoost;
       return {
         result,
-        resultTime
+        resultTime,
+        inundation
       };
     } else {
       return {
         resultTime: "N/A",
-        result: "No reading"
+        result: "No reading",
+        inundation: 0
       };
     }
   }
 
+  get plotLines() {
+    return {
+      "Water Level": [
+        {
+          color: "red",
+          width: 2,
+          value: +Math.random().toFixed(2),
+          dashStyle: "shortdash",
+          zIndex: 5,
+          label: {
+            x: -1,
+            align: "right",
+            text: "DANGER",
+            style: {
+              color: "red",
+              fontSize: "12px",
+              fontStyle: "italic"
+            }
+          }
+        }
+      ]
+    };
+  }
   // Follows Carmen GeoJSON format:
   get geoJSON() {
     return {
@@ -88,7 +131,8 @@ export default class Sensor {
         coordinates: this.coordinates
       },
       properties: {
-        description: this.description
+        description: this.description,
+        inundation: this.waterLevelReading.inundation
       },
       place_name: this.placeName,
       place_type: ["place"],

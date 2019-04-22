@@ -119,25 +119,29 @@ div.datepicker-trigger {
 }
 
 .first {
-  margin-left: 23px;
+  margin-left: 52px;
   pointer-events: none;
+  position: absolute;
 }
 
 i {
   margin-left: 5px;
   pointer-events: none;
+  position: absolute;
 }
 
 .second {
+  margin-left: 156px;
   pointer-events: none;
+  position: absolute;
 }
 
 div.vertical-line {
-  margin-left: 12px;
-  margin-right: 12px;
+  margin-left: 142px;
   width: 1px;
   background-color: lightgrey;
   height: 80%;
+  position: absolute;
 }
 
 div.disabled {

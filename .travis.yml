@@ -1,6 +1,8 @@
 language: node_js
 node_js:
   - 10.15.0
+env:
+  - TRAVIS_REPO_SLUG=JIB-8352/chatham_smart_map
 cache:
   directories:
     - ~/.cache
@@ -11,5 +13,5 @@ before_script:
   - yarn start & yarn run wait-on http://localhost:3000
 script:
   - yarn test
-  - yarn run cypress run --record --key 71815344-d092-46ef-8290-e80eeab2ccff --browser chrome
+  - yarn run cypress run --record --key f22f3805-daeb-4d67-a238-d0a50b15d629 --browser chrome
   - kill $(jobs -p) || true

@@ -1,5 +1,5 @@
 import { differenceInMilliseconds } from "date-fns";
-import { datastreamColors } from "@/helpers/constants";
+import { datastreamMetadata } from "@/helpers/constants";
 
 export default class Datastream {
   constructor(id, name, unitSymbol) {
@@ -8,11 +8,15 @@ export default class Datastream {
     this.unitSymbol = unitSymbol;
     this.observations = [];
     this.cache = new Map();
+    this.offset = 0;
   }
 
   get color() {
-    // deafult to light sea green color
-    return datastreamColors[this.name] || "#20B2AA";
+    return datastreamMetadata[this.name].color;
+  }
+
+  get unitHtml() {
+    return datastreamMetadata[this.name].unitHtml || this.unitSymbol;
   }
 
   get observationsNavLink() {

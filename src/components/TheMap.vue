@@ -24,7 +24,9 @@ import {
 import {
   addSensorInteractions,
   addGeocoder,
-  addSensorLayer
+  addSensorLayer,
+  addInundationLayer,
+  updateSensorGeoJSON
 } from "@/helpers/map-helper";
 
 export default {
@@ -64,9 +66,36 @@ export default {
         .then(responses => {
           const sensorGeoJSON = parseSensorInformation(responses.data.value);
           addSensorLayer(map, sensorGeoJSON);
+          addInundationLayer(map);
           geocoder.options.localGeocoder = query =>
             sensorGeocoder(query, sensorGeoJSON);
           addSensorInteractions(map, geocoder);
+
+          this.$store.watch(
+            ({ timelapse }) => timelapse.sliderVal,
+            () => {
+              updateSensorGeoJSON(map);
+            }
+          );
+          this.$store.watch(
+            ({ app }) => app.updatingData,
+            updatingData => {
+              if (!updatingData) {
+                updateSensorGeoJSON(map);
+              }
+            }
+          );
+          this.$store.watch(
+            ({ app }) => app.layerSelected,
+            layerSelected => {
+              const visibilityStr = layerSelected === 1 ? "visible" : "none";
+              map.setLayoutProperty(
+                "inundation_heat",
+                "visibility",
+                visibilityStr
+              );
+            }
+          );
 
           return getSensorData().finally(() => {
             this.$store.commit("app/updatingData", {

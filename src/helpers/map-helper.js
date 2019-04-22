@@ -1,6 +1,6 @@
 import store from "@/store";
 import Vue from "vue";
-import { getPaintProperty, sensors } from "./helper";
+import { getPaintProperty, sensors, getUpdatedGeoJSON } from "./helper";
 import PopupContent from "@/components/PopupContent";
 
 const addGeocoder = (map, accessToken) => {
@@ -134,7 +134,6 @@ const addSensorLayer = (map, sensorGeoJSON) => {
 
   let radius = initialRadius;
   let opacity = initialOpacity;
-
   map.addSource("outer_point", {
     type: "geojson",
     data: {
@@ -180,4 +179,58 @@ const addSensorLayer = (map, sensorGeoJSON) => {
   animateMarker();
 };
 
-export { addGeocoder, addSensorLayer, addSensorInteractions };
+const addInundationLayer = map => {
+  map.addLayer({
+    id: "inundation_heat",
+    type: "heatmap",
+    source: "outer_point",
+    layout: {
+      visibility: "none"
+    },
+    paint: {
+      "heatmap-weight": [
+        "interpolate",
+        ["linear"],
+        ["get", "inundation"],
+        0,
+        0,
+        30,
+        2
+      ],
+      "heatmap-intensity": ["interpolate", ["linear"], ["zoom"], 0, 0, 6, 1],
+      "heatmap-color": [
+        "interpolate",
+        ["linear"],
+        ["heatmap-density"],
+        0,
+        "rgba(33,102,172,0)",
+        0.1,
+        "#40E0D0",
+        0.2,
+        "#00BFFF",
+        0.6,
+        "#1E90FF",
+        1,
+        "#000080"
+      ],
+      "heatmap-radius": ["interpolate", ["linear"], ["zoom"], 0, 10, 22, 200],
+      "heatmap-opacity": ["interpolate", ["linear"], ["zoom"], 0, 0.4, 22, 1]
+    }
+  });
+};
+
+const updateSensorGeoJSON = map => {
+  const updatedGeoJSON = getUpdatedGeoJSON();
+  map.getSource("outer_point").setData({
+    type: "FeatureCollection",
+    features: updatedGeoJSON
+  });
+};
+
+export {
+  addGeocoder,
+  addSensorLayer,
+  addSensorInteractions,
+  addInundationLayer,
+  updateSensorGeoJSON
+};
