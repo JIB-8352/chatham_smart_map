@@ -2,6 +2,12 @@ import store from "@/store";
 import Vue from "vue";
 import { getPaintProperty, sensors, getUpdatedGeoJSON } from "./helper";
 import PopupContent from "@/components/PopupContent";
+import {
+  framesPerSecond,
+  initialOpacity,
+  initialRadius,
+  maxRadius
+} from "@/helpers/constants";
 
 const addGeocoder = (map, accessToken) => {
   const geocoder = new MapboxGeocoder({ accessToken, trackProximity: true });
@@ -127,11 +133,6 @@ const clearGeocoder = geocoder => {
 };
 
 const addSensorLayer = (map, sensorGeoJSON) => {
-  const framesPerSecond = 15;
-  const initialOpacity = 1;
-  const initialRadius = 8;
-  const maxRadius = 17;
-
   let radius = initialRadius;
   let opacity = initialOpacity;
   map.addSource("outer_point", {
