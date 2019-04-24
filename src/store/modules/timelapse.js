@@ -1,4 +1,9 @@
-import { yesterday, today } from "@/helpers/constants";
+import {
+  yesterday,
+  today,
+  viableMinuteSplits,
+  viableDayFractions
+} from "@/helpers/constants";
 import {
   addHours,
   format,
@@ -57,7 +62,6 @@ const getters = {
           startOfDay(startDate)
         ); // split into minutes instead of days
       }
-      const viableMinuteSplits = [1, 5, 10, 15, 20, 30, 60];
       for (let minuteSplit of viableMinuteSplits) {
         for (let j = 1; j < 25; j++) {
           if (j * minuteSplit >= minutesDifference) {
@@ -75,7 +79,6 @@ const getters = {
         }
       }
     } else {
-      const viableDayFractions = [1, 2, 3, 4, 6, 12];
       for (let dayFraction of viableDayFractions) {
         // splitting days into numbers of hours
         for (let j = 12; j < 24; j++) {

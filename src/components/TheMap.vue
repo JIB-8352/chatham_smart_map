@@ -29,14 +29,15 @@ import {
   updateSensorGeoJSON
 } from "@/helpers/map-helper";
 
+import { token } from "@/helpers/constants";
+
 export default {
   components: {
     Mapbox
   },
   data() {
     return {
-      accessToken:
-        "pk.eyJ1IjoicGNoYXdsYTgiLCJhIjoiY2pvb2IxeHhjMGFpbzNwcXJzbjkxenphbCJ9.PLLJazTRjDbljE9IniyWpg",
+      accessToken: token,
       mapOptions: {
         container: "map",
         style: "mapbox://styles/mapbox/streets-v10",
