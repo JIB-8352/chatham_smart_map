@@ -143,7 +143,7 @@ export default {
           labels: {
             formatter: function() {
               if (this.isFirst || this.isLast) {
-                return format(this.value, "M/d h:mm a");
+                return format(this.value, "M/D h:mm a");
               }
             },
             style: {

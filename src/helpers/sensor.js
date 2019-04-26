@@ -29,26 +29,23 @@ export default class Sensor {
       let series = [];
       let data = [];
       let dataMapping = [];
-      observations
-        .slice()
-        .reverse()
-        .forEach(observation => {
-          if (observation) {
-            const x = new Date(observation.resultTime).getTime();
-            const y = observation.result;
-            data.push({ x, y });
-            dataMapping.push({
-              seriesIndex: series.length,
-              dataIndex: data.length - 1
-            });
-          } else {
-            dataMapping.push(undefined);
-            if (data.length) {
-              series.push({ data, color, name });
-              data = [];
-            }
+      observations.forEach(observation => {
+        if (observation) {
+          const x = new Date(observation.resultTime).getTime();
+          const y = observation.result;
+          data.push({ x, y });
+          dataMapping.push({
+            seriesIndex: series.length,
+            dataIndex: data.length - 1
+          });
+        } else {
+          dataMapping.push(undefined);
+          if (data.length) {
+            series.push({ data, color, name });
+            data = [];
           }
-        });
+        }
+      });
       if (data.length) {
         series.push({ data, color, name });
       }
@@ -66,10 +63,7 @@ export default class Sensor {
     }
     // We made sure that water level was the first datastream:
     const { observations, unitSymbol } = this.datastreams[0];
-    // observations array is reversed - observations are present in descending order of resultTime,
-    // take this into account when we index into it.
-    const observation =
-      observations[observations.length - 1 - store.state.timelapse.sliderVal];
+    const observation = observations[store.state.timelapse.sliderVal];
     if (observation) {
       const result = `${observation.result} ${unitSymbol}`;
       const resultTime = store.getters["timelapse/present"]
