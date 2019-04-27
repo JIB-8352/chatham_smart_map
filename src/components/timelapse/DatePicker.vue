@@ -28,7 +28,7 @@
       @opened="onOpen"
       @apply="onApply"
       @closed="onClosed"
-      @cancelled="onCancelled"
+      @cancelled="applyClicked = true"
     />
   </div>
 </template>
@@ -43,11 +43,16 @@ import {
   startOfDay,
   format
 } from "date-fns";
-// We want onApply changes to occur if a user closes the date picker by clicking outside, so use
-// this variable to track if picker was closed by clicking outside.
-let applied = false;
+import { PICKER_FORMAT, PICKER_TEXT_FORMAT } from "@/helpers/constants";
 
 export default {
+  data() {
+    return {
+      // We want onApply changes to occur if a user closes the date picker by clicking outside, so use
+      // this variable to track if picker was closed by clicking outside.
+      applyClicked: false
+    };
+  },
   methods: {
     onApply() {
       let startDate = parse(this.dateOne);
@@ -66,34 +71,30 @@ export default {
       this.$store.commit("timelapse/setIsPlaying", { isPlaying: false });
       this.$store.commit("timelapse/setSliderVal", { sliderVal: 0 });
       this.$store.commit("timelapse/setDates", { startDate, endDate });
-      applied = true;
+      this.applyClicked = true;
     },
     onClosed() {
       const oldDateOne = format(
         this.$store.state.timelapse.startDate,
-        "YYYY-MM-DD"
+        PICKER_FORMAT
       );
       const oldDateTwo = format(
         this.$store.state.timelapse.endDate,
-        "YYYY-MM-DD"
+        PICKER_FORMAT
       );
       if (
-        !applied &&
+        !this.applyClicked &&
         (oldDateOne !== this.dateOne || oldDateTwo !== this.dateTwo)
       ) {
         this.onApply();
       }
     },
-    onCancelled() {
-      // Makes sure that when hitting cancel, the dates DON'T get applied
-      applied = true;
-    },
     onOpen() {
-      applied = false;
+      this.applyClicked = false;
       this.$store.commit("timelapse/setIsPlaying", { isPlaying: false });
     },
     formattedDate(date) {
-      return date ? format(date, "ddd, D MMM") : "";
+      return date ? format(date, PICKER_TEXT_FORMAT) : "";
     },
     ...mapMutations("picker", ["setDateOne", "setDateTwo"])
   },

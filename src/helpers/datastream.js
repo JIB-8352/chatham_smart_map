@@ -1,19 +1,25 @@
-import { datastreamMetadata } from "@/helpers/constants";
+import { DATASTREAM_METADATA } from "@/helpers/constants";
 
 export default class Datastream {
   constructor(id, name, unitSymbol) {
     this.id = id;
     this.name = name;
     this.unitSymbol = unitSymbol;
-    this.observations = [];
+    this.lookupArray = [];
+    this.data = [];
     this.offset = 0;
   }
 
   get color() {
-    return datastreamMetadata[this.name].color;
+    return DATASTREAM_METADATA[this.name].color;
   }
 
   get unitHtml() {
-    return datastreamMetadata[this.name].unitHtml || this.unitSymbol;
+    return DATASTREAM_METADATA[this.name].unitHtml || this.unitSymbol;
+  }
+
+  reset() {
+    this.data = [];
+    this.lookupArray = [];
   }
 }

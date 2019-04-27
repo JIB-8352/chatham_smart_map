@@ -1,10 +1,10 @@
-import { yesterday, today } from "@/helpers/constants";
+import { YESTERDAY, TODAY, PICKER_FORMAT } from "@/helpers/constants";
 import { format } from "date-fns";
 
 const getDefaultState = () => ({
-  dateOne: format(yesterday, "YYYY-MM-DD"),
-  dateTwo: format(today, "YYYY-MM-DD"),
-  endDate: format(today, "YYYY-MM-DD")
+  dateOne: format(YESTERDAY, PICKER_FORMAT),
+  dateTwo: format(TODAY, PICKER_FORMAT),
+  endDate: format(TODAY, PICKER_FORMAT)
 });
 
 const state = getDefaultState();

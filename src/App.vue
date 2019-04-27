@@ -126,4 +126,12 @@ p {
 .v-slider input {
   cursor: pointer;
 }
+
+div.tev {
+  display: block;
+  background-color: rgba(255, 255, 255, 0.6);
+  padding: 9px;
+  margin-left: 1px;
+  margin-top: 1px;
+}
 </style>

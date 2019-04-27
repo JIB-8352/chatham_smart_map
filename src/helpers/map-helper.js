@@ -1,16 +1,20 @@
 import store from "@/store";
 import Vue from "vue";
-import { getPaintProperty, sensors, getUpdatedGeoJSON } from "./helper";
 import PopupContent from "@/components/PopupContent";
 import {
-  framesPerSecond,
-  initialOpacity,
-  initialRadius,
-  maxRadius
+  ACCESS_TOKEN,
+  FPS,
+  INITIAL_OPACITY,
+  INITIAL_RADIUS,
+  MAX_RADIUS,
+  sensors
 } from "@/helpers/constants";
 
-const addGeocoder = (map, accessToken) => {
-  const geocoder = new MapboxGeocoder({ accessToken, trackProximity: true });
+export const addGeocoder = map => {
+  const geocoder = new MapboxGeocoder({
+    accessToken: ACCESS_TOKEN,
+    trackProximity: true
+  });
   map.addControl(geocoder, "top-left");
 
   const marker = new mapboxgl.Marker({
@@ -35,7 +39,7 @@ const addGeocoder = (map, accessToken) => {
   return geocoder;
 };
 
-const addSensorInteractions = (map, geocoder) => {
+export const addSensorInteractions = (map, geocoder) => {
   // Create a popup, but don't add it to the map yet.
   const popup = new mapboxgl.Popup({
     closeButton: false,
@@ -99,6 +103,14 @@ const addSensorInteractions = (map, geocoder) => {
   });
 };
 
+// Assumes that no sensor has an id of -99
+const getPaintProperty = (id = -99) => [
+  "case",
+  ["==", ["id"], id],
+  "#008000",
+  "#007cbf"
+];
+
 const selectSensor = (id, map, geocoder) => {
   // Since this method can be called even when getting sensor data fails, check if the layers were added.
   if (!map.getLayer("outer_point") || !map.getLayer("inner_point")) {
@@ -132,9 +144,9 @@ const clearGeocoder = geocoder => {
   geocoder.setInput("");
 };
 
-const addSensorLayer = (map, sensorGeoJSON) => {
-  let radius = initialRadius;
-  let opacity = initialOpacity;
+export const addSensorLayer = (map, sensorGeoJSON) => {
+  let radius = INITIAL_RADIUS;
+  let opacity = INITIAL_OPACITY;
   map.addSource("outer_point", {
     type: "geojson",
     data: {
@@ -148,7 +160,7 @@ const addSensorLayer = (map, sensorGeoJSON) => {
     source: "outer_point",
     type: "circle",
     paint: {
-      "circle-radius": initialRadius,
+      "circle-radius": INITIAL_RADIUS,
       "circle-radius-transition": { duration: 0 },
       "circle-opacity-transition": { duration: 0 },
       "circle-color": getPaintProperty()
@@ -159,7 +171,7 @@ const addSensorLayer = (map, sensorGeoJSON) => {
     source: "outer_point",
     type: "circle",
     paint: {
-      "circle-radius": initialRadius,
+      "circle-radius": INITIAL_RADIUS,
       "circle-color": getPaintProperty()
     }
   });
@@ -167,20 +179,20 @@ const addSensorLayer = (map, sensorGeoJSON) => {
   const animateMarker = () => {
     setTimeout(() => {
       requestAnimationFrame(animateMarker);
-      radius += (maxRadius - radius) / framesPerSecond;
-      opacity -= 0.9 / framesPerSecond;
+      radius += (MAX_RADIUS - radius) / FPS;
+      opacity -= 0.9 / FPS;
       if (opacity <= 0) {
-        radius = initialRadius;
-        opacity = initialOpacity;
+        radius = INITIAL_RADIUS;
+        opacity = INITIAL_OPACITY;
       }
       map.setPaintProperty("outer_point", "circle-radius", radius);
       map.setPaintProperty("outer_point", "circle-opacity", opacity);
-    }, 1000 / framesPerSecond);
+    }, 1000 / FPS);
   };
   animateMarker();
 };
 
-const addInundationLayer = map => {
+export const addInundationLayer = map => {
   map.addLayer({
     id: "inundation_heat",
     type: "heatmap",
@@ -220,18 +232,13 @@ const addInundationLayer = map => {
   });
 };
 
-const updateSensorGeoJSON = map => {
-  const updatedGeoJSON = getUpdatedGeoJSON();
+export const updateSensorGeoJSON = map => {
+  const updatedSensorGeoJSON = [];
+  for (const sensor of sensors.values()) {
+    updatedSensorGeoJSON.push(sensor.geoJSON);
+  }
   map.getSource("outer_point").setData({
     type: "FeatureCollection",
-    features: updatedGeoJSON
+    features: updatedSensorGeoJSON
   });
-};
-
-export {
-  addGeocoder,
-  addSensorLayer,
-  addSensorInteractions,
-  addInundationLayer,
-  updateSensorGeoJSON
 };

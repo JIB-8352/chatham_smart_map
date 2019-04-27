@@ -27,6 +27,7 @@ export default {
   padding: 0px;
   margin-left: 25px;
 }
+
 .theme--light.v-btn.v-btn--disabled:not(.v-btn--icon):not(.v-btn--flat):not(.v-btn--outline) {
   background-color: #ccc !important;
 }

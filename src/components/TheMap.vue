@@ -29,7 +29,13 @@ import {
   updateSensorGeoJSON
 } from "@/helpers/map-helper";
 
-import { token } from "@/helpers/constants";
+import {
+  ACCESS_TOKEN,
+  INITIAL_CENTER,
+  INITIAL_ZOOM,
+  DATA_FETCH_ERROR_TEXT,
+  GEOLOCATE_ERROR_TEXT
+} from "@/helpers/constants";
 
 export default {
   components: {
@@ -37,12 +43,12 @@ export default {
   },
   data() {
     return {
-      accessToken: token,
+      accessToken: ACCESS_TOKEN,
       mapOptions: {
         container: "map",
         style: "mapbox://styles/mapbox/streets-v10",
-        center: { lon: -81.2, lat: 32 },
-        zoom: 9.6,
+        center: INITIAL_CENTER,
+        zoom: INITIAL_ZOOM,
         hash: true
       },
       navControl: {
@@ -107,8 +113,7 @@ export default {
         .catch(() => {
           // This will catch ALL errors
           this.$store.commit("app/showWarning", {
-            warningText:
-              "We encountered an error while fetching sensor data. You may still use the map."
+            warningText: DATA_FETCH_ERROR_TEXT
           });
         })
         .finally(() => {
@@ -121,7 +126,7 @@ export default {
     },
     geolocateError() {
       this.$store.commit("app/showWarning", {
-        warningText: "We can't seem to locate you right now."
+        warningText: GEOLOCATE_ERROR_TEXT
       });
     }
   }

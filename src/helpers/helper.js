@@ -10,17 +10,24 @@ import {
   differenceInMinutes,
   addMinutes
 } from "date-fns";
-
-let sensors = new Map();
+import {
+  sensors,
+  GEOCODER_MATCHING_THRESHOLD,
+  DATA_FETCH_ERROR_TEXT
+} from "@/helpers/constants";
 
 const geocoderMatches = query => {
   const temp = query.toLowerCase();
   return temp
     .split(" ")
-    .some(el => stringSimilarity.compareTwoStrings(el, "sensor") > 0.65);
+    .some(
+      el =>
+        stringSimilarity.compareTwoStrings(el, "sensor") >
+        GEOCODER_MATCHING_THRESHOLD
+    );
 };
 
-const sensorGeocoder = (query, sensorGeoJSON) => {
+export const sensorGeocoder = (query, sensorGeoJSON) => {
   const matches = geocoderMatches(query);
   if (!matches) {
     return null;
@@ -32,7 +39,7 @@ const sensorGeocoder = (query, sensorGeoJSON) => {
   );
 };
 
-const parseSensorInformation = responses =>
+export const parseSensorInformation = responses =>
   responses.map(el => {
     const location = el.Locations[0];
     const coordinates = location.location.coordinates;
@@ -61,23 +68,7 @@ const parseSensorInformation = responses =>
     return sensor.geoJSON;
   });
 
-const getUpdatedGeoJSON = () => {
-  const updatedSensorGeoJSON = [];
-  for (let sensor of sensors.values()) {
-    updatedSensorGeoJSON.push(sensor.geoJSON);
-  }
-  return updatedSensorGeoJSON;
-};
-
-// Assumes that no sensor has an id of -99
-const getPaintProperty = (id = -99) => [
-  "case",
-  ["==", ["id"], id],
-  "#008000",
-  "#007cbf"
-];
-
-const getSensorInformation = () => {
+export const getSensorInformation = () => {
   // Get relevant information about all sensors that report a water level datastream.
   // The information we are looking for involves, sensor ids, locations, names and ids of datastreams they report, elevation etc. See parseSensorInformation() for details.
   // While this information is enough to set-up our Sensor and Datastream objects, and to plot the sensors on the map, we don't actually fetch their observations yet.
@@ -86,11 +77,18 @@ Locations($select=name,location)`);
   return axios.get(url);
 };
 
-const parseSensorData = (observations, nextLink, datastream, index, times) => {
+const parseSensorData = (
+  observations,
+  nextLink,
+  { data, offset, lookupArray },
+  times,
+  index,
+  indexOffset
+) => {
+  // datastream.observations.push(...observations);
   if (!observations.length) {
     return;
   }
-
   let i = 0;
   while (index < times.length && i < observations.length - 1) {
     const leftComp = compareAsc(times[index], observations[i].resultTime);
@@ -114,74 +112,74 @@ const parseSensorData = (observations, nextLink, datastream, index, times) => {
     }
     // matchingIndex may be zero, so don't do !matchingIndex
     if (matchingIndex !== undefined) {
-      pushToDatastream(datastream, times[index], observations[matchingIndex]);
+      const diff = Math.abs(
+        differenceInMinutes(
+          times[index],
+          observations[matchingIndex].resultTime
+        )
+      );
+      if (diff <= store.getters["timelapse/threshold"]) {
+        lookupArray.push(matchingIndex + indexOffset);
+      } else {
+        lookupArray.push(undefined);
+      }
       index++;
     } else {
+      const { result, resultTime } = observations[i];
+      const x = new Date(resultTime).getTime();
+      const y = +(result + offset).toFixed(3);
+      data.push([x, y]);
       i++; // times[index] is greater than both
     }
   }
 
-  if (index < times.length) {
-    if (nextLink) {
-      return axios
-        .get(nextLink)
-        .then(res =>
-          parseSensorData(
-            res.data.value,
-            res.data["@iot.nextLink"],
-            datastream,
-            index,
-            times
-          )
-        );
-    } else {
-      // No more observations, try to match all the remaining time intervals with the last observation
-      while (index < times.length) {
-        if (
-          !pushToDatastream(
-            datastream,
-            times[index],
-            observations[observations.length - 1]
-          )
-        ) {
-          // Since times[index] was not in threshold, remaining entries in times won't be as well, so
-          // fill datastream with undefined observations and break.
-          datastream.observations.push(
-            ...Array(times.length - index).fill(undefined)
-          );
-          break;
-        }
-        index--;
-      }
-    }
-    return Promise.resolve();
+  while (i < observations.length) {
+    const { result, resultTime } = observations[i];
+    const x = new Date(resultTime).getTime();
+    const y = +(result + offset).toFixed(3);
+    data.push([x, y]);
+    i++;
   }
-};
 
-const pushToDatastream = (datastream, time, { result, resultTime }) => {
-  const diff = Math.abs(differenceInMinutes(time, resultTime));
-  if (diff <= store.getters["timelapse/threshold"]) {
-    const adjustedResult = +(result + datastream.offset).toFixed(3);
-    datastream.observations.push({
-      result: adjustedResult,
-      resultTime
-    });
-    return true; // the observation was pushed
+  if (nextLink) {
+    return axios
+      .get(nextLink)
+      .then(res =>
+        parseSensorData(
+          res.data.value,
+          res.data["@iot.nextLink"],
+          { data, offset, lookupArray },
+          times,
+          index,
+          indexOffset + 100
+        )
+      );
   } else {
-    datastream.observations.push(undefined);
-    return false; // couldn't push the observation
+    while (index < times.length) {
+      const diff = Math.abs(
+        differenceInMinutes(times[index], observations[i - 1].resultTime)
+      );
+      if (diff <= store.getters["timelapse/threshold"]) {
+        lookupArray.push(i - 1 + indexOffset);
+      } else {
+        lookupArray.push(...Array(times.length - index).fill(undefined));
+        break;
+      }
+      index++;
+    }
   }
+  return Promise.resolve();
 };
 
-const getSensorData = () => {
+export const getSensorData = () => {
   const times = store.getters["timelapse/times"];
   const axiosArr = [];
   const datastreamArr = [];
-  for (let sensor of sensors.values()) {
+  for (const sensor of sensors.values()) {
     // For each datastream of a sensor, get a URL to start off parsing observations from.
     axiosArr.push(
       ...sensor.datastreams.map(datastream => {
-        datastream.observations = [];
+        datastream.reset();
         datastreamArr.push(datastream); // will help us keep track of which URL corresponds to which datastream object when the axios request completes.
         // Check if the cache has a URL corresponding to a date >= the last date in the time intervals array
         const url = datastreamObservationsLink(
@@ -203,8 +201,9 @@ const getSensorData = () => {
             res.data.value,
             res.data["@iot.nextLink"],
             datastreamArr[i],
+            times,
             0,
-            times
+            0
           )
         )
       )
@@ -223,39 +222,6 @@ const datastreamObservationsLink = (id, startDate, endDate) => {
   return `https://api.sealevelsensors.org/v1.0/Datastreams(${id})/Observations?$select=result,resultTime&$orderby=resultTime asc&$filter=((resultTime ge ${startDateWithThreshold}) and (resultTime le ${endDateWithThreshold}))`;
 };
 
-const removeCrosshair = (chart, { seriesIndex, dataIndex }) => {
-  chart.series[seriesIndex].data[dataIndex].setState();
-  chart.tooltip.hide();
-  return [];
-};
-
-const addCrosshair = (chart, { seriesIndex, dataIndex }) => {
-  chart.series[seriesIndex].data[dataIndex].setState("hover");
-  chart.tooltip.refresh(chart.series[seriesIndex].data[dataIndex]);
-  setTimeout(() => {
-    for (let halo of jQuery("path.highcharts-halo")) {
-      const parentClass = jQuery(halo)
-        .parent()
-        .attr("class");
-      if (parentClass.includes(`highcharts-series-${seriesIndex}`)) {
-        jQuery(halo)
-          .parent()
-          .css("display", "");
-      }
-    }
-  }, 25);
-
-  return [
-    {
-      color: "#cccccc",
-      width: 1,
-      value: chart.series[seriesIndex].data[dataIndex].x,
-      zIndex: 2,
-      className: "highcharts-crosshair highcharts-crosshair-thin undefined"
-    }
-  ];
-};
-
 store.watch(
   (state, getters) => getters["timelapse/times"],
   // eslint-disable-next-line no-unused-vars
@@ -268,8 +234,7 @@ store.watch(
       .catch(() => {
         // This will catch ALL errors
         store.commit("app/showWarning", {
-          warningText:
-            "We encountered an error while fetching sensor data. You may still use the map."
+          warningText: DATA_FETCH_ERROR_TEXT
         });
       })
       .finally(() => {
@@ -290,15 +255,3 @@ store.watch(
     }
   }
 );
-
-export {
-  getPaintProperty,
-  getSensorInformation,
-  getSensorData,
-  parseSensorInformation,
-  getUpdatedGeoJSON,
-  sensorGeocoder,
-  sensors,
-  removeCrosshair,
-  addCrosshair
-};

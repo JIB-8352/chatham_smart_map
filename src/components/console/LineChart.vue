@@ -1,29 +1,50 @@
 <template>
-  <div @mouseover="mouseOver" @mouseout="mouseout">
-    <highcharts :options="chartOptions" :callback="chartLoaded"></highcharts>
+  <div
+    class="chart-container"
+    @mouseover="userControls = true"
+    @mouseout="userControls = false"
+  >
+    <highcharts
+      :options="chartOptions"
+      :callback="chartLoaded"
+      :constructor-type="'stockChart'"
+    ></highcharts>
   </div>
 </template>
 
 <script>
 import { Chart } from "highcharts-vue";
-import { format } from "date-fns";
-import { removeCrosshair, addCrosshair } from "@/helpers/helper";
+import Highcharts from "highcharts";
+import stockInit from "highcharts/modules/stock";
+import {
+  removeCrosshair,
+  addCrosshair,
+  tooltipFormatter,
+  labelsFormatter
+} from "@/helpers/chart-helper";
 
+stockInit(Highcharts);
 export default {
   components: {
     highcharts: Chart
   },
   props: {
-    title: {
+    name: {
       type: String,
-      required: true
+      required: false,
+      default: ""
+    },
+    color: {
+      type: String,
+      required: false,
+      default: ""
     },
     unitHtml: {
       type: String,
       required: false,
       default: ""
     },
-    series: {
+    chartData: {
       type: Array,
       required: false,
       default: () => []
@@ -33,100 +54,90 @@ export default {
       required: false,
       default: () => []
     },
-    dataMapping: {
+    lookupArray: {
       type: Array,
       required: false,
-      default: () => {}
+      default: () => []
     }
   },
   data() {
     return {
       index: undefined,
-      movingLine: []
+      userControls: false
     };
   },
   methods: {
+    checkAndAddCrosshair(chart) {
+      const newIndex = this.lookupArray[this.$store.state.timelapse.sliderVal];
+      if (newIndex !== undefined) {
+        this.index = addCrosshair(chart, newIndex);
+        return true;
+      }
+      return false;
+    },
+    checkAndRemoveCrosshair(chart) {
+      if (this.index !== undefined) {
+        removeCrosshair(chart, this.index);
+        this.index = undefined;
+      }
+    },
     chartLoaded(chart) {
       this.$store.watch(
         ({ timelapse }) => timelapse.sliderVal,
-        sliderVal => {
-          if (!chart.series || !this.series.length || this.userControls) {
+        // eslint-disable-next-line no-unused-vars
+        _ => {
+          if (!chart.series || !this.chartData.length || this.userControls) {
             return;
           }
-          if (this.index) {
-            this.movingLine = removeCrosshair(chart, this.index);
-            this.index = undefined;
-          }
-          const newIndex = this.dataMapping[sliderVal];
-          if (newIndex) {
-            this.movingLine = addCrosshair(chart, newIndex);
-            this.index = newIndex;
-          }
+          this.checkAndRemoveCrosshair(chart);
+          this.checkAndAddCrosshair(chart);
         }
       );
       this.$store.watch(
         ({ timelapse }) => timelapse.isPlaying,
         isPlaying => {
-          if (!chart.series || !this.series.length) {
+          if (!chart.series || !this.chartData.length) {
             return;
           }
           if (!isPlaying) {
-            if (this.index) {
-              this.movingLine = removeCrosshair(chart, this.index);
-            }
+            this.checkAndRemoveCrosshair(chart);
           } else {
-            const newIndex = this.dataMapping[
-              this.$store.state.timelapse.sliderVal
-            ];
-            if (newIndex) {
-              this.movingLine = addCrosshair(chart, newIndex);
-              this.index = newIndex;
-            }
+            this.checkAndAddCrosshair(chart);
           }
         }
       );
-      this.$watch("series", series => {
-        if (!chart.series || !series.length) {
+      this.$watch("chartData", chartData => {
+        if (!chart.series || !chartData.length) {
           chart.tooltip.hide();
           this.index = undefined;
-          this.movingLine = [];
           return;
         }
-        for (let halo of jQuery("path.highcharts-halo")) {
-          jQuery(halo)
-            .parent()
-            .css("display", "none");
-        }
-        if (this.index) {
-          const newIndex = this.dataMapping[
-            this.$store.state.timelapse.sliderVal
-          ];
-          if (newIndex) {
-            this.movingLine = addCrosshair(chart, newIndex);
-            this.index = newIndex;
-          } else {
-            for (let tooltipBox of jQuery("g.highcharts-tooltip")) {
-              jQuery(tooltipBox).attr("transform", "translate(0,-999)");
-            }
-            this.index = undefined;
-            this.movingLine = [];
-          }
+        if (this.index !== undefined && !this.checkAndAddCrosshair(chart)) {
+          this.index = undefined;
         }
       });
-    },
-    mouseOver() {
-      this.userControls = true;
-      if (this.movingLine.length) {
-        this.movingLine = [];
-      }
-    },
-    mouseout() {
-      this.userControls = false;
     }
   },
   computed: {
+    title() {
+      if (this.$store.state.app.updatingData) {
+        return "Loading chart data...";
+      }
+      return this.chartData.length
+        ? `${this.name} Data`
+        : `No ${this.name} data available in selected time interval`;
+    },
     chartOptions() {
       return {
+        rangeSelector: {
+          enabled: false
+        },
+        navigator: {
+          enabled: false
+        },
+        scrollbar: {
+          enabled: false
+        },
         time: {
           useUTC: false
         },
@@ -142,22 +153,19 @@ export default {
           type: "datetime",
           labels: {
             formatter: function() {
-              if (this.isFirst || this.isLast) {
-                return format(this.value, "M/D h:mm a");
-              }
+              return labelsFormatter(this);
             },
             style: {
               "font-size": "10px"
             }
-          },
-          plotLines: this.movingLine
+          }
         },
         yAxis: {
           title: {
             text: null
           },
           labels: {
-            align: "left",
+            align: "right",
             x: 0,
             y: -2,
             format: `{value}${this.unitHtml}`,
@@ -166,14 +174,24 @@ export default {
           plotLines: this.plotLines
         },
         tooltip: {
-          xDateFormat: "%a, %b %e, %l:%M %P"
+          split: false,
+          useHTML: true,
+          padding: 0,
+          formatter: function() {
+            return tooltipFormatter(this);
+          }
         },
         legend: {
           enabled: false
         },
-        series: this.series,
+        series: [{ data: this.chartData }],
         plotOptions: {
           series: {
+            color: this.color,
+            name: this.name,
+            dataGrouping: {
+              groupPixelWidth: 4
+            },
             marker: {
               enabledThreshold: 5,
               symbol: "circle"
@@ -187,7 +205,7 @@ export default {
 </script>
 
 <style scoped>
-div[data-highcharts-chart] {
+div.chart-container {
   margin: 0px;
 }
 </style>
