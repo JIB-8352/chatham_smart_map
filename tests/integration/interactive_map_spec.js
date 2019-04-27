@@ -59,8 +59,8 @@ describe("The web app", function() {
     const startDate = subDays(today, 1);
 
     // initial dates:
-    cy.contains(format(startDate, "ddd, D MMM"));
-    cy.contains(format(today, "ddd, D MMM"));
+    cy.contains(format(startDate, "ddd, MMM D"));
+    cy.contains(format(today, "ddd, MMM D"));
   });
 
   it("updates map legend when another layer is selected", function() {
