@@ -81,7 +81,7 @@ export const parseSensorInformation = responses =>
 
 export const getSensorInformation = () => {
   /* Get relevant information about all sensors that report a water level datastream.
-    The information we are looking for involves, sensor ids, locations, names and ids of datastreams
+    The information we are looking for involves sensor ids, locations, names and ids of datastreams
     they report, elevation etc. See parseSensorInformation() for details.
     While this information is enough to set-up our sensor and datastream objects, and to add the
     sensors to the map, we don't fetch their observations yet */
@@ -231,7 +231,7 @@ export const getSensorData = () => {
 
 const datastreamObservationsLink = (id, startDate, endDate) => {
   /* The threshold is taken into account even while fetching data so that we don't miss observations
-    in the threshold window corresponding to startDate and endDate. */
+    in the threshold windows corresponding to startDate and endDate. */
   const startDateWithThreshold = addMinutes(
     startDate,
     -store.getters["timelapse/threshold"]

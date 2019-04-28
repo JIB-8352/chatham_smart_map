@@ -47,10 +47,10 @@ export const tooltipFormatter = ({ series, point }) => {
 
     if (firstX[1] === lastX[1]) {
       /* They have the same date, so take day and date from just one but time (hours:minutes) from both
-      - time will be different since the data group has more than one entry. */
+      - the two times will be different since the data group has more than one entry. */
       xValue = `${[firstX[0], firstX[1], firstX[2]].join(", ")} to ${lastX[2]}`;
     } else {
-      /* Different dates, so display dates and time from both. Skip displaying the day. */
+      /* Different dates, so display dates and time from both. Skip displaying the days to save space. */
       xValue = `${[firstX[1], firstX[2]].join(", ")} to ${[
         lastX[1],
         lastX[2]

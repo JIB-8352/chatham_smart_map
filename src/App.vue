@@ -79,7 +79,7 @@ p {
   left: 12px;
 }
 
-/* Override default CSS for search box to position it withing TheConsole */
+/* Override default CSS for search box to position it within TheConsole */
 .mapboxgl-ctrl-top-left .mapboxgl-ctrl {
   margin: 20px 0 0 18px;
   width: 309px;

@@ -5,8 +5,8 @@ const state = {
   mapError: false,
   mapLoaded: false,
   showWarning: false,
-  /* The app needs to know which layer has been selected and if a sensor has been selected to make
-  significant UI changes, like showing or hiding the timelapse components. */
+  /* The app needs to know which layer has been selected and if a sensor has been selected to
+    determine if we are in timelapseMode or not. */
   layerSelected: 0,
   sensorIsSelected: false,
   warningText: "",

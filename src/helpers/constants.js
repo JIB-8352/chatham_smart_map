@@ -12,7 +12,7 @@ export const INUNDATION_DEMO_MULTIPLIER = 8;
 
 /* Add any meta-data based on datastream type here; for now we store the color of the line chart 
   and the decimal value for the datastream's unit represented through a UTF-8 symbol (if required).
-  For now, we only have three types of datastreams 'Water Level', 'Air Pressure' and 'Air Temperature'. */
+  Right now, we only have three types of datastreams - 'Water Level', 'Air Pressure' and 'Air Temperature'. */
 export const DATASTREAM_METADATA = {
   "Water Level": { color: "#007CBF" },
   "Air Pressure": { color: "#FFD700" },
@@ -48,13 +48,13 @@ export const GEOCODER_MATCHING_THRESHOLD = 0.65;
 
 /* Collection of date formatting strings used throughout the app; based on formats supported by the
   date-fns library. */
-/* The date picker uses two formats - the first one internally, to represent dates in AirbnbStyleDatepicker,
-  the second one for displaying the selected dates to the user in the text div. */
+/* The date picker uses two formats - the first one internally, to represent dates in the 
+  AirbnbStyleDatepicker, and the second one for displaying the selected dates to the user in the text div. */
 export const PICKER_FORMAT = "YYYY-MM-DD";
 export const PICKER_TEXT_FORMAT = "ddd, MMM D";
 export const CHART_TOOLTIP_FORMAT = "ddd, MMM D, h:mm a";
 export const CHART_LABELS_FORMAT = "M/D h:mm a";
-/* The timelapse bar displays dates in thumb labels (rectangular ovals that show above the bar when the
+/* The timelapse bar displays dates in thumb labels (rectangular ovals that appear above the bar when the
   timelapse is playing) and tick labels (labels for the first and the last tick present below the bar).
   Each label may or may not be required to display the year. */
 export const THUMB_WITH_YEAR_FORMAT = "M/DD/YYYY h:mm a";

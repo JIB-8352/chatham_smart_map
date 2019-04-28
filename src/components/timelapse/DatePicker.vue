@@ -1,5 +1,5 @@
 <template>
-  <!-- Need to support the ability to disable the date picker; achieved through CSS -->
+  <!-- Need to support the ability to disable the date picker; achieved through CSS. -->
   <div
     class="datepicker-trigger"
     id="datepicker-trigger"
@@ -52,13 +52,13 @@ export default {
   data() {
     return {
       /* We want onApply changes to occur if a user closes the date picker by clicking outside, so use
-       this variable to track if picker was closed by clicking outside */
+       this variable to track if picker was closed by clicking outside. */
       applyClicked: false
     };
   },
   methods: {
     onApply() {
-      // It is possible for startDate to equal endDate, or for endDate to not be defined
+      // It is possible for startDate to equal endDate, or for endDate to not be defined.
       let startDate = parse(this.dateOne);
       let endDate = parse(this.dateTwo); // not to be confused with this.endDate!
       const minutesOffset = differenceInMinutes(new Date(), endDate);
@@ -88,7 +88,7 @@ export default {
         PICKER_FORMAT
       );
       /* If the picker was closed by clicking outside, and at least one of the dates was changed,
-        trigger apply */
+        trigger apply. */
       if (
         !this.applyClicked &&
         (oldDateOne !== this.dateOne || oldDateTwo !== this.dateTwo)
@@ -128,7 +128,7 @@ div.datepicker-trigger {
 
 /* pointer-events are none so that AirbnbStyleDatepicker can open no matter where the parent div/
 div.datepicker-trigger is clicked. Absolute positioning ensures that the text and the vertical line
-always start at the same position, regardless of changes in length */
+always start at the same position, regardless of changes in length. */
 .first {
   margin-left: 52px;
   pointer-events: none;

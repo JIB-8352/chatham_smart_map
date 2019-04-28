@@ -121,7 +121,7 @@ export default {
             warningText: DATA_FETCH_ERROR_TEXT
           });
           /* We may optionally choose to set updatingData to false here to allow the user to interact
-            with the timelapse components but there is no point since the initial data fetch failed. */
+            with the timelapse components but there is no need for that since the initial data fetch failed. */
         })
         .finally(() => {
           this.$store.commit("app/stopLoading");

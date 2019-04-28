@@ -31,7 +31,6 @@ export default {
     highcharts: Chart
   },
   props: {
-    // A description of the props is provided in datastream.js
     name: {
       type: String,
       required: false,
@@ -52,7 +51,7 @@ export default {
       required: false,
       default: () => []
     },
-    // Currently used to show the Danger line on the water level charts
+    // Currently used to show the danger line on the water level charts
     plotLines: {
       type: Array,
       required: false,
@@ -79,7 +78,7 @@ export default {
         // newIndex maybe 0, so don't refactor the predicate to if (newIndex)
         /* Since data points maybe sometimes grouped, we can't just set this.index = newIndex.
           The logic of adding the crosshair and figuring out the grouped data index from newIndex
-          is handled by addCrosshair method */
+          is handled by addCrosshair method. */
         this.index = addCrosshair(chart, newIndex);
         return true; // a crosshair was added
       }
@@ -97,7 +96,7 @@ export default {
         // eslint-disable-next-line no-unused-vars
         _ => {
           /* If the chart wasn't initialized with its series yet, or there is no data, or 
-            if the user is controlling the crosshair position, do nothing */
+            if the user is controlling the crosshair position, do nothing. */
           if (!chart.series || !this.chartData.length || this.userControls) {
             return;
           }
@@ -117,23 +116,23 @@ export default {
           } else {
             /* crosshair should appear when isPlaying changes to true; though the position of the 
               crosshair will soon change after 1 second (since the timelapse is playing), we want to 
-              show the crosshair for the time the timelapse starts at */
+              show the crosshair for the time the timelapse started at. */
             this.checkAndAddCrosshair(chart);
           }
         }
       );
       this.$watch("chartData", chartData => {
-        /* If a user clicks on on another sensor, chartData will change and the chart object will 
-          refer to the new chart */
+        /* If a user clicks on another sensor, chartData will change and the chart object will 
+          refer to the new chart. */
         if (!chart.series || !chartData.length) {
           /* Hide the tooltip, which takes care of hiding other elements of the crosshair like the
-           halo point, when the new chart has no data to display */
+           halo point, when the new chart has no data to display. */
           chart.tooltip.hide();
           this.index = undefined;
           return;
         }
-        /* If a crosshair was showing on the old chart, and corresponding to the same sliderVal, a
-          crosshair can be shown on the new chart, then add it. */
+        /* If a crosshair was showing on the old chart and corresponding to the same sliderVal a
+          crosshair can be shown on the new chart, add it. */
         if (this.index !== undefined && !this.checkAndAddCrosshair(chart)) {
           this.index = undefined;
         }
@@ -152,7 +151,7 @@ export default {
     chartOptions() {
       return {
         /* Disable some default features of a Highstock chart - we neither have space for them nor 
-          require them */
+          require them. */
         rangeSelector: {
           enabled: false
         },

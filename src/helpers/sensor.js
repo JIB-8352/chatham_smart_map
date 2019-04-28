@@ -16,9 +16,7 @@ export default class Sensor {
     this.datastreams = datastreams;
   }
 
-  /* placeName is used whenever the sensor's name needs to be displayed in the geocoder search box.
-    Since this depends on the sensor's name, we didn't make the name lowercase while parsing it.
-  */
+  // placeName is used whenever the sensor's name needs to be displayed in the geocoder search box.
   get placeName() {
     return `${this.name}, Chatham, GA`;
   }

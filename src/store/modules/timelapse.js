@@ -24,7 +24,7 @@ const getDefaultState = () => ({
   startDate: YESTERDAY,
   endDate: TODAY,
   isPlaying: false,
-  /* start at "present"/the last tick, sliderVal = maxVal = 13. The value comes from the fact that
+  /* start at "present"/the last tick, sliderVal == maxVal == 13. The value comes from the fact that
   the time interval generation code generates 14 times when startDate = YESTERDAY and endDate = TODAY */
   sliderVal: 13,
   thumbLabel: true

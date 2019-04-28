@@ -120,7 +120,8 @@ const getPaintProperty = (id = -99) => [
 ];
 
 const selectSensor = (id, map, geocoder) => {
-  // Since this method can be called even when getting sensor data failed, check if the layers were added.
+  /* This method should not do anything if fetching sensor data failed. A way to check this is
+    to see if the sensor layers were added or not. */
   if (!map.getLayer("outer_point") || !map.getLayer("inner_point")) {
     return;
   }
@@ -134,7 +135,8 @@ const selectSensor = (id, map, geocoder) => {
 };
 
 const unselectSensor = map => {
-  // Since this method can be called even when getting sensor data failed, check if the layers were added.
+  /* This method should not do anything if fetching sensor data failed. A way to check this is
+    to see if the sensor layers were added or not. */
   if (!map.getLayer("outer_point") || !map.getLayer("inner_point")) {
     return;
   }
