@@ -29,19 +29,26 @@ import {
   updateSensorGeoJSON
 } from "@/helpers/map-helper";
 
+import {
+  ACCESS_TOKEN,
+  INITIAL_CENTER,
+  INITIAL_ZOOM,
+  DATA_FETCH_ERROR_TEXT,
+  GEOLOCATE_ERROR_TEXT
+} from "@/helpers/constants";
+
 export default {
   components: {
     Mapbox
   },
   data() {
     return {
-      accessToken:
-        "pk.eyJ1IjoicGNoYXdsYTgiLCJhIjoiY2pvb2IxeHhjMGFpbzNwcXJzbjkxenphbCJ9.PLLJazTRjDbljE9IniyWpg",
+      accessToken: ACCESS_TOKEN,
       mapOptions: {
         container: "map",
         style: "mapbox://styles/mapbox/streets-v10",
-        center: { lon: -81.2, lat: 32 },
-        zoom: 9.6,
+        center: INITIAL_CENTER,
+        zoom: INITIAL_ZOOM,
         hash: true
       },
       navControl: {
@@ -64,6 +71,8 @@ export default {
 
       getSensorInformation()
         .then(responses => {
+          /* The sensor GeoJSON can be created without fetching any observations. Once we have the
+            GeoJSON, we can add the map layers and interactions we want to support. */
           const sensorGeoJSON = parseSensorInformation(responses.data.value);
           addSensorLayer(map, sensorGeoJSON);
           addInundationLayer(map);
@@ -74,6 +83,7 @@ export default {
           this.$store.watch(
             ({ timelapse }) => timelapse.sliderVal,
             () => {
+              // We have to manually update the GeoJSON since currently, it's not a reactive Vue property.
               updateSensorGeoJSON(map);
             }
           );
@@ -81,6 +91,8 @@ export default {
             ({ app }) => app.updatingData,
             updatingData => {
               if (!updatingData) {
+                /* We need to update the GeoJSON whenever we finish updating data for the selected
+                  dates. sliderVal doesn't change when data has updated, so this watch is required. */
                 updateSensorGeoJSON(map);
               }
             }
@@ -96,7 +108,7 @@ export default {
               );
             }
           );
-
+          /* We can fetch observations now; return the Promise object so that any errors can be caught in the catch block. */
           return getSensorData().finally(() => {
             this.$store.commit("app/updatingData", {
               updatingData: false
@@ -106,9 +118,10 @@ export default {
         .catch(() => {
           // This will catch ALL errors
           this.$store.commit("app/showWarning", {
-            warningText:
-              "We encountered an error while fetching sensor data. You may still use the map."
+            warningText: DATA_FETCH_ERROR_TEXT
           });
+          /* We may optionally choose to set updatingData to false here to allow the user to interact
+            with the timelapse components but there is no need for that since the initial data fetch failed. */
         })
         .finally(() => {
           this.$store.commit("app/stopLoading");
@@ -120,7 +133,7 @@ export default {
     },
     geolocateError() {
       this.$store.commit("app/showWarning", {
-        warningText: "We can't seem to locate you right now."
+        warningText: GEOLOCATE_ERROR_TEXT
       });
     }
   }

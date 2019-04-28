@@ -2,14 +2,15 @@
   <console-card scrollable :heading="sensor.name.toUpperCase()">
     <PopupContent :sensor="sensor" />
     <LineChart
-      v-for="({ title, series, unitHtml, plotLines, dataMapping },
+      v-for="({ name, color, data, unitHtml, lookupArray },
       index) in chartDatastreams"
       :key="index"
-      :title="title"
+      :name="name"
+      :color="color"
       :unitHtml="unitHtml"
-      :series="series"
-      :plotLines="plotLines"
-      :dataMapping="dataMapping"
+      :chartData="data"
+      :plotLines="sensor.plotLines[name]"
+      :lookupArray="lookupArray"
     />
   </console-card>
 </template>

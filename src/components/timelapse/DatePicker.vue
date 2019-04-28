@@ -1,4 +1,5 @@
 <template>
+  <!-- Need to support the ability to disable the date picker; achieved through CSS. -->
   <div
     class="datepicker-trigger"
     id="datepicker-trigger"
@@ -8,6 +9,8 @@
     <p class="first">{{ formattedDate(dateOne) }}</p>
     <div class="vertical-line"></div>
     <p class="second">{{ formattedDate(dateTwo) }}</p>
+    <!-- @cancelled should set applyClicked in the sense that the picker wasn't closed by clicking
+      outside -->
     <AirbnbStyleDatepicker
       :trigger-element-id="'datepicker-trigger'"
       :mode="'range'"
@@ -28,7 +31,7 @@
       @opened="onOpen"
       @apply="onApply"
       @closed="onClosed"
-      @cancelled="onCancelled"
+      @cancelled="applyClicked = true"
     />
   </div>
 </template>
@@ -43,13 +46,19 @@ import {
   startOfDay,
   format
 } from "date-fns";
-// We want onApply changes to occur if a user closes the date picker by clicking outside, so use
-// this variable to track if picker was closed by clicking outside.
-let applied = false;
+import { PICKER_FORMAT, PICKER_TEXT_FORMAT } from "@/helpers/constants";
 
 export default {
+  data() {
+    return {
+      /* We want onApply changes to occur if a user closes the date picker by clicking outside, so use
+       this variable to track if picker was closed by clicking outside. */
+      applyClicked: false
+    };
+  },
   methods: {
     onApply() {
+      // It is possible for startDate to equal endDate, or for endDate to not be defined.
       let startDate = parse(this.dateOne);
       let endDate = parse(this.dateTwo); // not to be confused with this.endDate!
       const minutesOffset = differenceInMinutes(new Date(), endDate);
@@ -61,39 +70,38 @@ export default {
         endDate = addMinutes(endDate, minutesOffset);
         startDate = addMinutes(startDate, minutesOffset);
       } else if (!minutesOffset) {
+        // takes into account cases when minutesOffset is NaN
         endDate = startDate;
       }
       this.$store.commit("timelapse/setIsPlaying", { isPlaying: false });
       this.$store.commit("timelapse/setSliderVal", { sliderVal: 0 });
       this.$store.commit("timelapse/setDates", { startDate, endDate });
-      applied = true;
+      this.applyClicked = true;
     },
     onClosed() {
       const oldDateOne = format(
         this.$store.state.timelapse.startDate,
-        "YYYY-MM-DD"
+        PICKER_FORMAT
       );
       const oldDateTwo = format(
         this.$store.state.timelapse.endDate,
-        "YYYY-MM-DD"
+        PICKER_FORMAT
       );
+      /* If the picker was closed by clicking outside, and at least one of the dates was changed,
+        trigger apply. */
       if (
-        !applied &&
+        !this.applyClicked &&
         (oldDateOne !== this.dateOne || oldDateTwo !== this.dateTwo)
       ) {
         this.onApply();
       }
     },
-    onCancelled() {
-      // Makes sure that when hitting cancel, the dates DON'T get applied
-      applied = true;
-    },
     onOpen() {
-      applied = false;
+      this.applyClicked = false;
       this.$store.commit("timelapse/setIsPlaying", { isPlaying: false });
     },
     formattedDate(date) {
-      return date ? format(date, "ddd, D MMM") : "";
+      return date ? format(date, PICKER_TEXT_FORMAT) : "";
     },
     ...mapMutations("picker", ["setDateOne", "setDateTwo"])
   },
@@ -118,6 +126,9 @@ div.datepicker-trigger {
   cursor: pointer;
 }
 
+/* pointer-events are none so that AirbnbStyleDatepicker can open no matter where the parent div/
+div.datepicker-trigger is clicked. Absolute positioning ensures that the text and the vertical line
+always start at the same position, regardless of changes in length. */
 .first {
   margin-left: 52px;
   pointer-events: none;
@@ -144,11 +155,14 @@ div.vertical-line {
   position: absolute;
 }
 
+/* Disable pointer-events and UI change when div.datepicker-trigger is disabled */
 div.disabled {
   background-color: #ccc;
   pointer-events: none;
 }
 
+/* Fixes the bottom position of the AirbnbStyleDatepicker so that it appears directly on top of
+div.datepicker-trigger  */
 div[id^="airbnb-style-datepicker-wrapper"] {
   bottom: 40px !important;
   top: auto !important;

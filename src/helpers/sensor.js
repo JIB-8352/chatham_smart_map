@@ -1,8 +1,10 @@
 import { distanceInWordsToNow, format } from "date-fns";
 import store from "@/store";
 import {
-  inundationDemoBoost,
-  inundationDemoMultiplier
+  INUNDATION_DEMO_BOOST,
+  INUNDATION_DEMO_MULTIPLIER,
+  THUMB_WITH_YEAR_FORMAT,
+  THUMB_WO_YEAR_FORMAT
 } from "@/helpers/constants";
 
 export default class Sensor {
@@ -14,50 +16,18 @@ export default class Sensor {
     this.datastreams = datastreams;
   }
 
+  // placeName is used whenever the sensor's name needs to be displayed in the geocoder search box.
   get placeName() {
     return `${this.name}, Chatham, GA`;
   }
 
   get chartDatastreams() {
     if (store.state.app.updatingData) {
-      return [{ title: "Loading chart data..." }];
+      // return an array with an empty object so that space is made to render one empty chart
+      return [{}];
     }
 
-    return this.datastreams.map(datastream => {
-      const { name, color, observations, unitHtml } = datastream;
-      const plotLines = this.plotLines[name];
-      let series = [];
-      let data = [];
-      let dataMapping = [];
-      observations
-        .slice()
-        .reverse()
-        .forEach(observation => {
-          if (observation) {
-            const x = new Date(observation.resultTime).getTime();
-            const y = observation.result;
-            data.push({ x, y });
-            dataMapping.push({
-              seriesIndex: series.length,
-              dataIndex: data.length - 1
-            });
-          } else {
-            dataMapping.push(undefined);
-            if (data.length) {
-              series.push({ data, color, name });
-              data = [];
-            }
-          }
-        });
-      if (data.length) {
-        series.push({ data, color, name });
-      }
-      const title = series.length
-        ? `${name} Data`
-        : `No ${name} data available in selected time interval`;
-
-      return { title, series, unitHtml, plotLines, dataMapping };
-    });
+    return this.datastreams;
   }
 
   get waterLevelReading() {
@@ -65,39 +35,39 @@ export default class Sensor {
       return { result: "Loading...", resultTime: "Loading...", inundation: 0 };
     }
     // We made sure that water level was the first datastream:
-    const { observations, unitSymbol } = this.datastreams[0];
-    // observations array is reversed - observations are present in descending order of resultTime,
-    // take this into account when we index into it.
-    const observation =
-      observations[observations.length - 1 - store.state.timelapse.sliderVal];
-    if (observation) {
-      const result = `${observation.result} ${unitSymbol}`;
-      const resultTime = store.getters["timelapse/present"]
-        ? distanceInWordsToNow(observation.resultTime, {
+    const { data, unitSymbol, lookupArray } = this.datastreams[0];
+    const dataIndex = lookupArray[store.state.timelapse.sliderVal];
+    if (dataIndex !== undefined) {
+      // dataIndex may be zero, so don't refactor the predicate to if (dataIndex)
+      const [resultTime, result] = data[dataIndex];
+      const resultString = `${result} ${unitSymbol}`;
+      /* The resultTime formatting depends on if the timelapse is at present or not and if
+        we want to display the year or not. */
+      const resultTimeString = store.getters["timelapse/present"]
+        ? distanceInWordsToNow(resultTime, {
             addSuffix: true
           })
         : format(
-            observation.resultTime,
+            resultTime,
             store.getters["timelapse/displayYear"]
-              ? "M/DD/YYYY h:mm aa"
-              : "MMMM Do h:mm aa"
+              ? THUMB_WITH_YEAR_FORMAT
+              : THUMB_WO_YEAR_FORMAT
           );
-      const inundation =
-        observation.result * inundationDemoMultiplier + inundationDemoBoost;
       return {
-        result,
-        resultTime,
-        inundation
+        result: resultString,
+        resultTime: resultTimeString,
+        inundation: result * INUNDATION_DEMO_MULTIPLIER + INUNDATION_DEMO_BOOST
       };
     } else {
       return {
-        resultTime: "N/A",
         result: "No reading",
+        resultTime: "N/A",
         inundation: 0
       };
     }
   }
 
+  // Currently, only one plot line for the water level datastream is required. The value is radomly chosen.
   get plotLines() {
     return {
       "Water Level": [
@@ -108,8 +78,8 @@ export default class Sensor {
           dashStyle: "shortdash",
           zIndex: 5,
           label: {
-            x: -1,
-            align: "right",
+            x: 0,
+            align: "left",
             text: "DANGER",
             style: {
               color: "red",
@@ -121,6 +91,7 @@ export default class Sensor {
       ]
     };
   }
+
   // Follows Carmen GeoJSON format:
   get geoJSON() {
     return {
@@ -134,7 +105,7 @@ export default class Sensor {
         description: this.description,
         inundation: this.waterLevelReading.inundation
       },
-      place_name: this.placeName,
+      place_name: this.placeName, // the last few fields allow sensors to be searched for by name
       place_type: ["place"],
       center: this.coordinates
     };
