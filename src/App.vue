@@ -51,18 +51,18 @@ export default {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Override this property set by Vuetify */
+/* Override default CSS for p tags set by Vuetify */
 p {
   margin-bottom: 0px;
   font-size: 14px;
 }
 
-/* Card popup for sensors */
+/* Remove the arrow from the popup */
 .mapboxgl-popup-tip {
   border: 0px;
 }
 
-/* Pushes the popup away from sensor */
+/* Pushes the popup away from sensor, prevents flickering bugs */
 .mapboxgl-popup-anchor-bottom {
   top: -12px;
 }
@@ -79,7 +79,7 @@ p {
   left: 12px;
 }
 
-/* Override default CSS for search box */
+/* Override default CSS for search box to position it within TheConsole */
 .mapboxgl-ctrl-top-left .mapboxgl-ctrl {
   margin: 20px 0 0 18px;
   width: 309px;
@@ -91,12 +91,13 @@ p {
   padding-left: 35px;
 }
 
-/* Override default CSS for popup */
+/* Override default CSS for popup - give it a higher z-index than everything in TheConsole */
 .mapboxgl-popup {
   z-index: 2;
 }
 
-/* Override default CSS for slider's thumb label */
+/* Override default CSS for slider's thumb label - gives the label a rectangular/oval shape rather
+than the default balloon shape */
 .v-slider__thumb-label {
   transform: translate(-70px, -18px);
   border-radius: 20px;
@@ -104,7 +105,8 @@ p {
   width: 145px !important;
 }
 
-/* Override default CSS for the span element containing the thumb label text */
+/* Override default CSS for the span element containing the thumb label text so that it is not 
+rotated */
 .v-slider__thumb-label > span {
   transform: none;
 }
@@ -127,6 +129,8 @@ p {
   cursor: pointer;
 }
 
+/* CSS for the chart tooltip that is rendered using HTML rather than SVG to allow it to cover the 
+y-axis labels */
 div.tev {
   display: block;
   background-color: rgba(255, 255, 255, 0.6);

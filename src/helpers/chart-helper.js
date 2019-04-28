@@ -13,6 +13,8 @@ export const removeCrosshair = (chart, index) => {
 export const addCrosshair = (chart, index) => {
   let newIndex;
   if (chart.series[0].hasGroupedData) {
+    /* Each entry in groupMap has a start and a length property which can be used to figure
+     out the group data index that Highstock mapped our original index to. */
     newIndex = chart.series[0].groupMap.findIndex(
       el => index >= el.start && el.start + el.length > index
     );
@@ -29,8 +31,12 @@ export const addCrosshair = (chart, index) => {
 export const tooltipFormatter = ({ series, point }) => {
   let xValue;
   let yLabel;
+  /* If we have grouped data and that the point is not the only entry in the group, we want
+    to inform the user that the tooltip will display averaged data collected between some interval. */
   if (series.hasGroupedData && point.dataGroup.length > 1) {
     const { start, length } = point.dataGroup;
+    /* Get the first and last entries in this data group, format their time and split into individual
+      components so they can be compared. */
     const firstX = format(series.xData[start], CHART_TOOLTIP_FORMAT).split(
       ", "
     );
@@ -40,8 +46,11 @@ export const tooltipFormatter = ({ series, point }) => {
     ).split(", ");
 
     if (firstX[1] === lastX[1]) {
+      /* They have the same date, so take day and date from just one but time (hours:minutes) from both
+      - the two times will be different since the data group has more than one entry. */
       xValue = `${[firstX[0], firstX[1], firstX[2]].join(", ")} to ${lastX[2]}`;
     } else {
+      /* Different dates, so display dates and time from both. Skip displaying the days to save space. */
       xValue = `${[firstX[1], firstX[2]].join(", ")} to ${[
         lastX[1],
         lastX[2]
@@ -63,6 +72,7 @@ export const tooltipFormatter = ({ series, point }) => {
 
 export const labelsFormatter = obj => {
   if (obj.isFirst || obj.isLast) {
+    // Only display two labels on the x-axis, the first and the last.
     return format(obj.value, CHART_LABELS_FORMAT);
   }
 };

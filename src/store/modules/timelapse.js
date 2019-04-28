@@ -24,6 +24,8 @@ const getDefaultState = () => ({
   startDate: YESTERDAY,
   endDate: TODAY,
   isPlaying: false,
+  /* start at "present"/the last tick, sliderVal == maxVal == 13. The value comes from the fact that
+  the time interval generation code generates 14 times when startDate = YESTERDAY and endDate = TODAY */
   sliderVal: 13,
   thumbLabel: true
 });
@@ -53,6 +55,7 @@ const mutations = {
 };
 
 const getters = {
+  // time interval generation code; times in an array of ISO strings.
   times({ startDate, endDate }) {
     // takes two dates and returns an array of ISO date strings
     const daysDifference = differenceInDays(endDate, startDate);
@@ -111,6 +114,7 @@ const getters = {
     return startDate.getFullYear() !== endDate.getFullYear();
   },
   tickLabels({ startDate, endDate }, { maxVal, displayYear }) {
+    // we only display the first and the last tick label
     const newLabels = [];
     if (isToday(endDate)) {
       newLabels[0] = distanceInWordsToNow(startDate, { addSuffix: true });
@@ -127,6 +131,7 @@ const getters = {
     }
     return newLabels;
   },
+  // Syntax for using a parameter passed to a getter:
   getThumbLabel: (state, { times, displayYear }) => val => {
     return format(
       times[val],
@@ -134,6 +139,7 @@ const getters = {
     );
   },
   present({ sliderVal, endDate }, { maxVal }) {
+    // If the timelapse is in "present" mode
     return sliderVal === maxVal && isToday(endDate);
   },
   threshold(state, getters) {

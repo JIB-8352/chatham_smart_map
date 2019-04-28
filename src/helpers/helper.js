@@ -13,10 +13,13 @@ import {
 import {
   sensors,
   GEOCODER_MATCHING_THRESHOLD,
-  DATA_FETCH_ERROR_TEXT
+  DATA_FETCH_ERROR_TEXT,
+  API_SKIP_COUNT
 } from "@/helpers/constants";
 
 const geocoderMatches = query => {
+  /* Returns a boolean to represent if any word of query matches the keyword "sensor" to some
+   degree as determined by the threshold. */
   const temp = query.toLowerCase();
   return temp
     .split(" ")
@@ -28,10 +31,16 @@ const geocoderMatches = query => {
 };
 
 export const sensorGeocoder = (query, sensorGeoJSON) => {
+  /* The custom geocoder that allows searching for sensors by name. Essentially, the user must type
+  a word close enough to "sensor" in the search box for the geocoder to display sensor names in its results. */
   const matches = geocoderMatches(query);
   if (!matches) {
     return null;
   }
+  /* Results are presented in order of the sensor's location description matching the query.
+    Using description as opposed to name makes sense here as query and description are lowercase,
+    while name is not and compareTwoStrings is case-sensitive. We also added description to each sensor's
+    GeoJSON so that it can be accessed here. */
   return sensorGeoJSON.sort(
     (el1, el2) =>
       stringSimilarity.compareTwoStrings(query, el2.properties.description) -
@@ -41,11 +50,13 @@ export const sensorGeocoder = (query, sensorGeoJSON) => {
 
 export const parseSensorInformation = responses =>
   responses.map(el => {
+    /* Grab all the fields we want from each response to initialize a sensor object and datastream
+     objects for all the datastreams the sensor reports. */
     const location = el.Locations[0];
     const coordinates = location.location.coordinates;
     const name = location.name;
     const id = el["@iot.id"];
-    const description = el.description.toLowerCase();
+    const description = el.description.toLowerCase(); // make description lowercase
     const elevation = Number(el.properties.elevationNAVD88);
 
     const datastreams = el.Datastreams.map(datastream => {
@@ -64,14 +75,16 @@ export const parseSensorInformation = responses =>
     datastreams.unshift(waterlevelDatastream);
 
     const sensor = new Sensor(id, coordinates, name, description, datastreams);
-    sensors.set(id, sensor);
+    sensors.set(id, sensor); // add the sensor object to the Map
     return sensor.geoJSON;
   });
 
 export const getSensorInformation = () => {
-  // Get relevant information about all sensors that report a water level datastream.
-  // The information we are looking for involves, sensor ids, locations, names and ids of datastreams they report, elevation etc. See parseSensorInformation() for details.
-  // While this information is enough to set-up our Sensor and Datastream objects, and to plot the sensors on the map, we don't actually fetch their observations yet.
+  /* Get relevant information about all sensors that report a water level datastream.
+    The information we are looking for involves sensor ids, locations, names and ids of datastreams
+    they report, elevation etc. See parseSensorInformation() for details.
+    While this information is enough to set-up our sensor and datastream objects, and to add the
+    sensors to the map, we don't fetch their observations yet */
   const url = encodeUrl(`https://api.sealevelsensors.org/v1.0/Things?$select=@iot.id,description,properties&$filter=Datastreams/name eq 'Water Level'&$expand=Datastreams($select=unitOfMeasurement,name,@iot.id),
 Locations($select=name,location)`);
   return axios.get(url);
@@ -85,10 +98,13 @@ const parseSensorData = (
   index,
   indexOffset
 ) => {
-  // datastream.observations.push(...observations);
   if (!observations.length) {
     return;
   }
+  // index represents the current entry in the times array for which we are trying to find a match.
+  /* Since matches are added to the lookupArray on the fly, that is, a 100 observations at a time,
+    indexOffset lets us track how many observations we have already seen.
+  */
   let i = 0;
   while (index < times.length && i < observations.length - 1) {
     const leftComp = compareAsc(times[index], observations[i].resultTime);
@@ -110,7 +126,7 @@ const parseSensorData = (
           observations[i + 1].resultTime
         ]);
     }
-    // matchingIndex may be zero, so don't do !matchingIndex
+    // matchingIndex may be zero, so don't refactor the predicate to if (matchingIndex)
     if (matchingIndex !== undefined) {
       const diff = Math.abs(
         differenceInMinutes(
@@ -142,6 +158,8 @@ const parseSensorData = (
   }
 
   if (nextLink) {
+    // a nextLink is present, so there are more observations to be fetched, regardless of what index is.
+    // return the promise
     return axios
       .get(nextLink)
       .then(res =>
@@ -151,10 +169,11 @@ const parseSensorData = (
           { data, offset, lookupArray },
           times,
           index,
-          indexOffset + 100
+          indexOffset + API_SKIP_COUNT
         )
       );
   } else {
+    // No more observations, try to match the remaining entries in times array with the last observation.
     while (index < times.length) {
       const diff = Math.abs(
         differenceInMinutes(times[index], observations[i - 1].resultTime)
@@ -162,13 +181,12 @@ const parseSensorData = (
       if (diff <= store.getters["timelapse/threshold"]) {
         lookupArray.push(i - 1 + indexOffset);
       } else {
-        lookupArray.push(...Array(times.length - index).fill(undefined));
-        break;
+        lookupArray.push(undefined);
       }
       index++;
     }
   }
-  return Promise.resolve();
+  return Promise.resolve(); // this method must return a promise
 };
 
 export const getSensorData = () => {
@@ -176,12 +194,13 @@ export const getSensorData = () => {
   const axiosArr = [];
   const datastreamArr = [];
   for (const sensor of sensors.values()) {
-    // For each datastream of a sensor, get a URL to start off parsing observations from.
+    // For each datastream of a sensor, get a URL to start parsing observations from.
     axiosArr.push(
       ...sensor.datastreams.map(datastream => {
         datastream.reset();
-        datastreamArr.push(datastream); // will help us keep track of which URL corresponds to which datastream object when the axios request completes.
-        // Check if the cache has a URL corresponding to a date >= the last date in the time intervals array
+        /* datastreamArr will help us keep track of which URL corresponds to which datastream object
+          when the axios requests complete and we have to parse the data. */
+        datastreamArr.push(datastream);
         const url = datastreamObservationsLink(
           datastream.id,
           times[0],
@@ -191,26 +210,28 @@ export const getSensorData = () => {
       })
     );
   }
-  // Use axios.all to perform requests in parallel
-  return axios
-    .all(axiosArr)
-    .then(responses =>
-      axios.all(
-        responses.map((res, i) =>
-          parseSensorData(
-            res.data.value,
-            res.data["@iot.nextLink"],
-            datastreamArr[i],
-            times,
-            0,
-            0
-          )
+  /* The first axios.all allows us to perform requests in parallel. The second axios.all allows us to
+   wait for all the requests to end. */
+  return axios.all(axiosArr).then(responses =>
+    axios.all(
+      responses.map((res, i) =>
+        // Each response holds observations corresponding to a datastream
+        parseSensorData(
+          res.data.value,
+          res.data["@iot.nextLink"],
+          datastreamArr[i],
+          times,
+          0,
+          0
         )
       )
-    );
+    )
+  );
 };
 
 const datastreamObservationsLink = (id, startDate, endDate) => {
+  /* The threshold is taken into account even while fetching data so that we don't miss observations
+    in the threshold windows corresponding to startDate and endDate. */
   const startDateWithThreshold = addMinutes(
     startDate,
     -store.getters["timelapse/threshold"]
@@ -219,6 +240,7 @@ const datastreamObservationsLink = (id, startDate, endDate) => {
     endDate,
     store.getters["timelapse/threshold"]
   ).toISOString();
+  // Get observations for a datastream filtered and ordered by resultTime
   return `https://api.sealevelsensors.org/v1.0/Datastreams(${id})/Observations?$select=result,resultTime&$orderby=resultTime asc&$filter=((resultTime ge ${startDateWithThreshold}) and (resultTime le ${endDateWithThreshold}))`;
 };
 
@@ -226,6 +248,7 @@ store.watch(
   (state, getters) => getters["timelapse/times"],
   // eslint-disable-next-line no-unused-vars
   _ => {
+    // Fetch observations for each datastream again when store.getters["timelapse/times"] array updates.
     store.commit("app/updatingData", {
       updatingData: true
     });
@@ -250,6 +273,8 @@ store.watch(
   (state, getters) => getters["app/reset"],
   reset => {
     if (reset) {
+      /* Before the timelapse components disappear, reset their state to their default start state
+        so that there aren't any anomalies when the components appear again. */
       store.commit("timelapse/resetState");
       store.commit("picker/resetState");
     }

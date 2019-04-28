@@ -37,11 +37,14 @@ export default {
   margin: 0.7em;
 }
 
+/* flex-grow so that it can take up the remaining space. We only want the last ConsoleCard to be
+scrollable/have this property. The height limit is decided by max-height of TheConsole. */
 .scroll {
   flex-grow: 1;
   overflow-y: scroll;
 }
 
+/* The line height will ensure that when the text wraps, it doesn't intersect. */
 h2 {
   font-size: 15px;
   line-height: 14px;

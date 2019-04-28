@@ -32,7 +32,7 @@ const mutations = {
   toggleLayers(state, { index }) {
     state.layers.forEach((layer, i) => {
       layer.selected = i === index;
-      layer.legend_displayed = i === index || i === 0; // always display the first legend
+      layer.legend_displayed = i === index || i === 0; // always display the sensors layer legend
     });
   },
   setSensor(state, { sensor }) {
