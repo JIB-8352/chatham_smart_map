@@ -37,7 +37,8 @@ export default class Sensor {
     // We made sure that water level was the first datastream:
     const { data, unitSymbol, lookupArray } = this.datastreams[0];
     const dataIndex = lookupArray[store.state.timelapse.sliderVal];
-    if (dataIndex) {
+    if (dataIndex !== undefined) {
+      // dataIndex may be zero, so don't refactor the predicate to if (dataIndex)
       const [resultTime, result] = data[dataIndex];
       const resultString = `${result} ${unitSymbol}`;
       /* The resultTime formatting depends on if the timelapse is at present or not and if
