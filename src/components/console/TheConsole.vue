@@ -1,5 +1,9 @@
 <template>
   <div id="console">
+    <!-- The empty divs help create spacing between TheConsole's components -->
+    <!-- The first spacing ia larger than others to create room for the search bar.
+      The search bar in rendered to a MapBox controlled DOM of the page but we want to create 
+      an illusion that it is part of TheConsole -->
     <div style="min-height: 48px;"></div>
     <ConsoleLayersList />
     <div style="min-height: 6px;"></div>

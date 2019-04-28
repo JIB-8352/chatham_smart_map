@@ -22,16 +22,19 @@ export const addGeocoder = map => {
   });
 
   geocoder.on("result", ev => {
-    marker.remove();
-    unselectSensor(map); // if a sensor is already selected
+    marker.remove(); // remove any previously added marker
+    unselectSensor(map); // unselect any previously selected sensor
+    // check if the result is a sensor:
     if (sensors.has(ev.result.id)) {
       // ev.result is the entire GeoJSON for the selected sensor
       selectSensor(ev.result.id, map, geocoder);
     } else {
+      // if not, just add a marker to that place
       marker.setLngLat(ev.result.geometry.coordinates).addTo(map);
     }
   });
   geocoder.on("clear", () => {
+    // the text in the geocoder will be removed implicitly here
     marker.remove();
     unselectSensor(map);
   });
@@ -70,7 +73,7 @@ export const addSensorInteractions = (map, geocoder) => {
       .setLngLat(coordinates)
       .setHTML(html)
       .addTo(map);
-
+    // this allows the popup to be a reactive Vue component
     vuePopup = new Vue({
       render: h => h(PopupContent, { props: { sensor } })
     }).$mount("#vue-popup-content");
@@ -79,13 +82,14 @@ export const addSensorInteractions = (map, geocoder) => {
   map.on("mouseleave", "outer_point", () => {
     map.getCanvas().style.cursor = "";
     popup.remove();
-    vuePopup.$destroy();
+    vuePopup.$destroy(); // destroy the Vue object since the popup isn't visible anymore
   });
 
   map.on("click", "outer_point", e => {
     popup.remove();
     // Beware that this isn't the entire sensor GeoJSON but a simpler representation of it returned as part of the event object
     const sensorFeature = e.features[0];
+    // Check if this sensor is currently unselected
     const select =
       sensorFeature.layer.paint["circle-color"][1][2] !== sensorFeature.id;
 
@@ -97,13 +101,17 @@ export const addSensorInteractions = (map, geocoder) => {
       }
       selectSensor(sensorFeature.id, map, geocoder);
     } else {
+      // clear the text in the geocoder explicitly when a sensor is unselected via click
       unselectSensor(map);
       clearGeocoder(geocoder);
     }
   });
 };
 
-// Assumes that no sensor has an id of -99
+/* Assumes that no sensor has an id of -99. This is a Mapbox filter that gives a green color
+  to features with the specified id and a blue color to all other features. Ensure that even
+  when the sensor layer is first added, paint property follows this format so that detecting if
+  a sensor has been selected or not becomes easier. */
 const getPaintProperty = (id = -99) => [
   "case",
   ["==", ["id"], id],
@@ -112,13 +120,13 @@ const getPaintProperty = (id = -99) => [
 ];
 
 const selectSensor = (id, map, geocoder) => {
-  // Since this method can be called even when getting sensor data fails, check if the layers were added.
+  // Since this method can be called even when getting sensor data failed, check if the layers were added.
   if (!map.getLayer("outer_point") || !map.getLayer("inner_point")) {
     return;
   }
   const paintProperty = getPaintProperty(id);
   const sensor = sensors.get(id);
-  store.commit("cons/setSensor", { sensor });
+  store.commit("cons/setSensor", { sensor }); // select this sensor
   store.commit("app/sensorSelected", { sensorIsSelected: true });
   geocoder.setInput(sensor.placeName);
   map.setPaintProperty("outer_point", "circle-color", paintProperty);
@@ -126,7 +134,7 @@ const selectSensor = (id, map, geocoder) => {
 };
 
 const unselectSensor = map => {
-  // Since this method can be called even when getting sensor data fails, check if the layers were added.
+  // Since this method can be called even when getting sensor data failed, check if the layers were added.
   if (!map.getLayer("outer_point") || !map.getLayer("inner_point")) {
     return;
   }
@@ -138,6 +146,7 @@ const unselectSensor = map => {
 };
 
 const clearGeocoder = geocoder => {
+  // Remove any text and the cross icon from the geocoder search box
   document.getElementsByClassName(
     "geocoder-icon geocoder-icon-close"
   )[0].style.display = "none";

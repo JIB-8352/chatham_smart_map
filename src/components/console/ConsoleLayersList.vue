@@ -1,6 +1,9 @@
 <template>
   <console-card heading="MAP LAYERS">
     <ul>
+      <!-- We receive the toggleLayers event from ConsoleLayersListItem, then call this component's
+        toggleLayers(index) with the index parameter to determine which ConsoleLayersListItem was
+        clicked -->
       <ConsoleLayersListItem
         v-for="(layer, index) in layers"
         :key="index"

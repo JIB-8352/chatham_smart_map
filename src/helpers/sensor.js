@@ -16,12 +16,16 @@ export default class Sensor {
     this.datastreams = datastreams;
   }
 
+  /* placeName is used whenever the sensor's name needs to be displayed in the geocoder search box.
+    Since this depends on the sensor's name, we didn't make the name lowercase while parsing it.
+  */
   get placeName() {
     return `${this.name}, Chatham, GA`;
   }
 
   get chartDatastreams() {
     if (store.state.app.updatingData) {
+      // return an array with an empty object so that space is made to render one empty chart
       return [{}];
     }
 
@@ -38,6 +42,8 @@ export default class Sensor {
     if (dataIndex) {
       const [resultTime, result] = data[dataIndex];
       const resultString = `${result} ${unitSymbol}`;
+      /* The resultTime formatting depends on if the timelapse is at present or not and if
+        we want to display the year or not. */
       const resultTimeString = store.getters["timelapse/present"]
         ? distanceInWordsToNow(resultTime, {
             addSuffix: true
@@ -62,6 +68,7 @@ export default class Sensor {
     }
   }
 
+  // Currently, only one plot line for the water level datastream is required. The value is radomly chosen.
   get plotLines() {
     return {
       "Water Level": [
@@ -85,6 +92,7 @@ export default class Sensor {
       ]
     };
   }
+
   // Follows Carmen GeoJSON format:
   get geoJSON() {
     return {
@@ -98,7 +106,7 @@ export default class Sensor {
         description: this.description,
         inundation: this.waterLevelReading.inundation
       },
-      place_name: this.placeName,
+      place_name: this.placeName, // the last few fields allow sensors to be searched for by name
       place_type: ["place"],
       center: this.coordinates
     };

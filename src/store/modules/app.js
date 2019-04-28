@@ -1,8 +1,12 @@
 const state = {
+  /* loading is only used once - in the beginning when we are waiting for the map to load and the 
+  getSensorInformation promise to resolve. updatingData is used whenever observations are being fetched. */
   loading: true,
   mapError: false,
   mapLoaded: false,
   showWarning: false,
+  /* The app needs to know which layer has been selected and if a sensor has been selected to make
+  significant UI changes, like showing or hiding the timelapse components. */
   layerSelected: 0,
   sensorIsSelected: false,
   warningText: "",
@@ -48,6 +52,8 @@ const getters = {
   timelapseMode({ layerSelected, sensorIsSelected }) {
     return layerSelected !== 0 || sensorIsSelected;
   },
+  /* When the app is no longer in timelapseMode, wait for any previously issued data requests to finish
+    before the timelapse components can reset - see the watcher in helper.js */
   reset({ updatingData }, { timelapseMode }) {
     return !timelapseMode && !updatingData;
   }

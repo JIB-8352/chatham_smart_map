@@ -19,8 +19,9 @@ export default {
 };
 </script>
 <style scoped>
+/* Override some properties of v-btn */
 .v-btn {
-  min-width: 0px; /* had to override some properties of v-btn to make it square */
+  min-width: 0px;
   height: 40px;
   width: 40px;
   border-radius: 3px;

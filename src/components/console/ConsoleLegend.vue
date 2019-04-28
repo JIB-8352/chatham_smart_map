@@ -1,6 +1,7 @@
 <template>
   <console-card heading="MAP LEGEND">
     <div class="legend_row" v-for="(layer, index) in layers" :key="index">
+      <!-- Since it's not recommended to use v-if with v-for, toggle the display property -->
       <span
         :style="{ display: layer.legend_displayed ? 'block' : 'none' }"
         v-html="layer.legend_html"
@@ -22,6 +23,7 @@ export default {
 </script>
 
 <style scoped>
+/* The >>> allows styling to be applied to elements generated via v-html */
 .legend_row >>> .label {
   display: inline-block;
   text-align: center;

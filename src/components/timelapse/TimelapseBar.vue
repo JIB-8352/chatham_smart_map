@@ -32,6 +32,9 @@ export default {
       return this.$store.getters["timelapse/getThumbLabel"](sliderVal);
     },
     advanceTimelapse() {
+      // This code gets executed every second when the timelapse is playing.
+      /* Parts of the app listen to changes in sliderVal to make UI changes or are automatically 
+        updated since they are reactive and depend on sliderVal (like PopupContent). */
       if (this.sliderVal === this.maxVal) {
         this.$store.commit("timelapse/setSliderVal", { sliderVal: 0 });
       } else {
@@ -43,6 +46,7 @@ export default {
   },
   computed: {
     sliderVal: {
+      // a computed v-model property requires a getter and a setter
       get() {
         return this.$store.state.timelapse.sliderVal;
       },
@@ -70,7 +74,7 @@ export default {
     );
   },
   mounted: function() {
-    // Create an arrow below the v-slider thumb-label
+    // Create an arrow below the v-slider thumb label
     const node = document.createElement("div");
     node.className = "arrow-down";
     document
