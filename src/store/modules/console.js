@@ -13,7 +13,8 @@ const state = {
     {
       name: "Inundation",
       color: "steelblue",
-      description: "Display altitude-adjusted water levels.",
+      // description: "Display altitude-adjusted water levels.",
+      description: "Coming soon...",
       icon: "waves",
       selected: false,
       legend_html: `<div class="colors"></div>
