@@ -26,8 +26,12 @@ export default {
   },
   methods: {
     toggleLayers(index) {
-      this.$store.commit("cons/toggleLayers", { index });
-      this.$store.commit("app/layerSelected", { layerSelected: index });
+
+      // hack! display but disable 'Inundation' layer
+      if (index === 0) {
+        this.$store.commit("cons/toggleLayers", { index });
+        this.$store.commit("app/layerSelected", { layerSelected: index });
+      }
     }
   }
 };

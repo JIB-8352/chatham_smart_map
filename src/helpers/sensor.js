@@ -73,14 +73,14 @@ export default class Sensor {
       "Water Level": [
         {
           color: "red",
-          width: 2,
-          value: +Math.random().toFixed(2),
-          dashStyle: "shortdash",
+          width: 1,
+          value: 1.4, // Fort Pulaski's nuisance flooding threshold is ~9 ft (2.7m) above MLLW, which converts to 4.5 ft (1.4m)
+          dashStyle: "longdash",
           zIndex: 5,
           label: {
             x: 0,
             align: "left",
-            text: "DANGER",
+            text: "",
             style: {
               color: "red",
               fontSize: "12px",
