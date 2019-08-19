@@ -99,16 +99,16 @@ p {
 /* Override default CSS for slider's thumb label - gives the label a rectangular/oval shape rather
 than the default balloon shape */
 .v-slider__thumb-label {
-  transform: translate(-70px, -18px);
-  border-radius: 20px;
-  z-index: 2;
+  transform: translate(-70px, -18px) !important;
+  border-radius: 20px !important;
+  z-index: 2 !important;
   width: 145px !important;
 }
 
 /* Override default CSS for the span element containing the thumb label text so that it is not 
 rotated */
 .v-slider__thumb-label > span {
-  transform: none;
+  transform: none !important;
 }
 
 /* CSS for the downward arrow located at the bottom of the thumb label */
