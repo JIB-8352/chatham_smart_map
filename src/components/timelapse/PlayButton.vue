@@ -18,6 +18,7 @@ export default {
   }
 };
 </script>
+
 <style scoped>
 /* Override some properties of v-btn */
 .v-btn {

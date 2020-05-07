@@ -63,12 +63,10 @@ export default {
       default: () => []
     }
   },
-  data() {
-    return {
-      index: undefined, // index of data point currently having a crosshair
-      userControls: false // whether or not the user currently controls the position of the crosshair
-    };
-  },
+  data: () => ({
+    index: undefined, // index of data point currently having a crosshair
+    userControls: false // whether or not the user currently controls the position of the crosshair
+  }),
   methods: {
     checkAndAddCrosshair(chart) {
       /* Use the lookupArray to find the index of the data point corresponding to the current
@@ -82,6 +80,7 @@ export default {
         this.index = addCrosshair(chart, newIndex);
         return true; // a crosshair was added
       }
+
       return false;
     },
     checkAndRemoveCrosshair(chart) {
@@ -93,13 +92,13 @@ export default {
     chartLoaded(chart) {
       this.$store.watch(
         ({ timelapse }) => timelapse.sliderVal,
-        // eslint-disable-next-line no-unused-vars
-        _ => {
+        () => {
           /* If the chart wasn't initialized with its series yet, or there is no data, or 
             if the user is controlling the crosshair position, do nothing. */
           if (!chart.series || !this.chartData.length || this.userControls) {
             return;
           }
+
           this.checkAndRemoveCrosshair(chart);
           this.checkAndAddCrosshair(chart);
         }
@@ -110,6 +109,7 @@ export default {
           if (!chart.series || !this.chartData.length) {
             return;
           }
+
           if (!isPlaying) {
             // crosshair should disappear when isPlaying changes to false
             this.checkAndRemoveCrosshair(chart);
@@ -144,6 +144,7 @@ export default {
       if (this.$store.state.app.updatingData) {
         return "Loading chart data...";
       }
+
       return this.chartData.length
         ? `${this.name} Data`
         : `No ${this.name} data available in selected time interval`;

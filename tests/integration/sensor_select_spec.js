@@ -34,6 +34,53 @@ describe("When selecting a sensor via click", function() {
       });
   });
 
+  it("enables the timelapse feature", function() {
+    cy.clock();
+    // Start the timelapse
+    cy.get("button")
+      .contains("play_arrow")
+      .click();
+    cy.get("button").contains("pause");
+
+    cy.get(".v-slider__thumb-label__container").should(
+      "not.have.css",
+      "display",
+      "none"
+    );
+
+    cy.tick(1000);
+    cy.get('input[role="slider"]').should($el => {
+      expect($el.attr("value")).to.equal("0"); // slider is at '0' after 1 second
+    });
+    // move slider once more so that it is at '1'
+    cy.tick(1000);
+    // Timelapse should pause when dates widget is opened
+    cy.get("#datepicker-trigger").click();
+    cy.get("[id^=airbnb-style-datepicker-wrapper]").should(
+      "not.have.css",
+      "display",
+      "none"
+    );
+    cy.get("button").contains("play_arrow");
+    cy.get("button")
+      .contains("Cancel")
+      .click(); // slider value shouldn't reset when 'Cancel' is clicked
+    cy.get('input[role="slider"]').should($el => {
+      // slider should stay at '1'
+      expect($el.attr("value")).to.equal("1");
+    });
+    // Timelapse should reset when 'Apply' is clicked
+    cy.get("#datepicker-trigger").click({ force: true });
+    cy.get("button")
+      .contains("Apply")
+      .click();
+    cy.get("button").contains("play_arrow");
+    cy.get('input[role="slider"]').should($el => {
+      // slider should stay at '1'
+      expect($el.attr("value")).to.equal("0");
+    });
+  });
+
   it("sensor is unselected when clicked again", function() {
     cy.window().then(win => {
       try {

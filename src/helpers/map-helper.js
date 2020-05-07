@@ -125,11 +125,15 @@ const selectSensor = (id, map, geocoder) => {
   if (!map.getLayer("outer_point") || !map.getLayer("inner_point")) {
     return;
   }
+
   const paintProperty = getPaintProperty(id);
   const sensor = sensors.get(id);
+
   store.commit("cons/setSensor", { sensor }); // select this sensor
   store.commit("app/sensorSelected", { sensorIsSelected: true });
+
   geocoder.setInput(sensor.placeName);
+
   map.setPaintProperty("outer_point", "circle-color", paintProperty);
   map.setPaintProperty("inner_point", "circle-color", paintProperty);
 };
@@ -140,9 +144,12 @@ const unselectSensor = map => {
   if (!map.getLayer("outer_point") || !map.getLayer("inner_point")) {
     return;
   }
+
   const paintProperty = getPaintProperty();
+
   store.commit("cons/setSensor", { undefined });
   store.commit("app/sensorSelected", { sensorIsSelected: false });
+
   map.setPaintProperty("outer_point", "circle-color", paintProperty);
   map.setPaintProperty("inner_point", "circle-color", paintProperty);
 };
@@ -158,6 +165,7 @@ const clearGeocoder = geocoder => {
 export const addSensorLayer = (map, sensorGeoJSON) => {
   let radius = INITIAL_RADIUS;
   let opacity = INITIAL_OPACITY;
+
   map.addSource("outer_point", {
     type: "geojson",
     data: {
@@ -200,6 +208,7 @@ export const addSensorLayer = (map, sensorGeoJSON) => {
       map.setPaintProperty("outer_point", "circle-opacity", opacity);
     }, 1000 / FPS);
   };
+
   animateMarker();
 };
 
@@ -248,6 +257,7 @@ export const updateSensorGeoJSON = map => {
   for (const sensor of sensors.values()) {
     updatedSensorGeoJSON.push(sensor.geoJSON);
   }
+
   map.getSource("outer_point").setData({
     type: "FeatureCollection",
     features: updatedSensorGeoJSON

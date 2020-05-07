@@ -53,18 +53,19 @@ export default class Sensor {
               ? THUMB_WITH_YEAR_FORMAT
               : THUMB_WO_YEAR_FORMAT
           );
+
       return {
         result: resultString,
         resultTime: resultTimeString,
         inundation: result * INUNDATION_DEMO_MULTIPLIER + INUNDATION_DEMO_BOOST
       };
-    } else {
-      return {
-        result: "No reading",
-        resultTime: "N/A",
-        inundation: 0
-      };
     }
+
+    return {
+      result: "No reading",
+      resultTime: "N/A",
+      inundation: 0
+    };
   }
 
   // Currently, only one plot line for the water level datastream is required. The value is radomly chosen.

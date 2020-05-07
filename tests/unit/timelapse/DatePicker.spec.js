@@ -27,15 +27,15 @@ describe("DatePicker", () => {
   });
 
   it("div is disabled by default", () => {
-    expect(wrapper.find("div.datepicker-trigger").hasClass("disabled")).toBe(
-      true
+    expect(wrapper.find("div.datepicker-trigger").classes()).toContain(
+      "disabled"
     );
   });
 
   it("input is enabled when updatingData = false", () => {
     store.commit("app/updatingData", { updatingData: false });
-    expect(wrapper.find("div.datepicker-trigger").hasClass("disabled")).toBe(
-      false
+    expect(wrapper.find("div.datepicker-trigger").classes()).not.toContain(
+      "disabled"
     );
   });
 });
