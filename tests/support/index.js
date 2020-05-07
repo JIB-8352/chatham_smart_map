@@ -15,5 +15,5 @@ before(function() {
   cy.wait("@getMap", { timeout: 45000 });
   cy.wait("@getData", { timeout: 45000 });
   // Once the progress circle disappears, our app is in the default starting state and is ready to be tested:
-  cy.get(".v-progress-circular").should("not.exist");
+  cy.get(".v-progress-circular", { timeout: 16000 }).should("not.exist");
 });

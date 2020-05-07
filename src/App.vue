@@ -53,7 +53,7 @@ export default {
 
 /* Override default CSS for p tags set by Vuetify */
 p {
-  margin-bottom: 0px;
+  margin-bottom: 0px !important;
   font-size: 14px;
 }
 

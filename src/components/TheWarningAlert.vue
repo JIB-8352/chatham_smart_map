@@ -3,6 +3,7 @@
     {{ text }}
   </v-alert>
 </template>
+
 <script>
 export default {
   props: {

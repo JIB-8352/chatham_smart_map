@@ -41,26 +41,24 @@ export default {
   components: {
     Mapbox
   },
-  data() {
-    return {
-      accessToken: ACCESS_TOKEN,
-      mapOptions: {
-        container: "map",
-        style: "mapbox://styles/mapbox/streets-v10",
-        center: INITIAL_CENTER,
-        zoom: INITIAL_ZOOM,
-        hash: true
-      },
-      navControl: {
-        show: true,
-        position: "bottom-right"
-      },
-      geoControl: {
-        show: true,
-        position: "bottom-right"
-      }
-    };
-  },
+  data: () => ({
+    accessToken: ACCESS_TOKEN,
+    mapOptions: {
+      container: "map",
+      style: "mapbox://styles/mapbox/streets-v10",
+      center: INITIAL_CENTER,
+      zoom: INITIAL_ZOOM,
+      hash: true
+    },
+    navControl: {
+      show: true,
+      position: "bottom-right"
+    },
+    geoControl: {
+      show: true,
+      position: "bottom-right"
+    }
+  }),
   methods: {
     mapLoaded(map) {
       // Expose the map object to window so that Cypress can use it.

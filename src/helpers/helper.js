@@ -17,18 +17,17 @@ import {
   API_SKIP_COUNT
 } from "@/helpers/constants";
 
-const geocoderMatches = query => {
-  /* Returns a boolean to represent if any word of query matches the keyword "sensor" to some
-   degree as determined by the threshold. */
-  const temp = query.toLowerCase();
-  return temp
+/* Returns a boolean to represent if any word of query matches the keyword "sensor" to some
+ degree as determined by the threshold. */
+const geocoderMatches = query =>
+  query
+    .toLowerCase()
     .split(" ")
     .some(
       el =>
         stringSimilarity.compareTwoStrings(el, "sensor") >
         GEOCODER_MATCHING_THRESHOLD
     );
-};
 
 export const sensorGeocoder = (query, sensorGeoJSON) => {
   /* The custom geocoder that allows searching for sensors by name. Essentially, the user must type
@@ -63,8 +62,14 @@ export const parseSensorInformation = responses =>
       const id = datastream["@iot.id"];
       const name = datastream.name;
       const unitSymbol = datastream.unitOfMeasurement.symbol;
+
+      // skip battery level data for now
+      if (name === "Battery Level") {
+        return undefined;
+      }
+
       return new Datastream(id, name, unitSymbol);
-    });
+    }).filter(Boolean);
     // Ensure that water level datastream is the first element, so that it appears first in the graphs
     const waterlevelIndex = datastreams.findIndex(
       datastream => datastream.name === "Water Level"
@@ -76,6 +81,7 @@ export const parseSensorInformation = responses =>
 
     const sensor = new Sensor(id, coordinates, name, description, datastreams);
     sensors.set(id, sensor); // add the sensor object to the Map
+
     return sensor.geoJSON;
   });
 
@@ -87,6 +93,7 @@ export const getSensorInformation = () => {
     sensors to the map, we don't fetch their observations yet */
   const url = encodeUrl(`https://api.sealevelsensors.org/v1.0/Things?$select=@iot.id,description,properties&$filter=Datastreams/name eq 'Water Level'&$expand=Datastreams($select=unitOfMeasurement,name,@iot.id),
 Locations($select=name,location)`);
+
   return axios.get(url);
 };
 
@@ -172,20 +179,21 @@ const parseSensorData = (
           indexOffset + API_SKIP_COUNT
         )
       );
-  } else {
-    // No more observations, try to match the remaining entries in times array with the last observation.
-    while (index < times.length) {
-      const diff = Math.abs(
-        differenceInMinutes(times[index], observations[i - 1].resultTime)
-      );
-      if (diff <= store.getters["timelapse/threshold"]) {
-        lookupArray.push(i - 1 + indexOffset);
-      } else {
-        lookupArray.push(undefined);
-      }
-      index++;
-    }
   }
+
+  // No more observations, try to match the remaining entries in times array with the last observation.
+  while (index < times.length) {
+    const diff = Math.abs(
+      differenceInMinutes(times[index], observations[i - 1].resultTime)
+    );
+    if (diff <= store.getters["timelapse/threshold"]) {
+      lookupArray.push(i - 1 + indexOffset);
+    } else {
+      lookupArray.push(undefined);
+    }
+    index++;
+  }
+
   return Promise.resolve(); // this method must return a promise
 };
 
@@ -206,6 +214,7 @@ export const getSensorData = () => {
           times[0],
           times[times.length - 1]
         );
+
         return axios.get(encodeUrl(url));
       })
     );
@@ -246,8 +255,7 @@ const datastreamObservationsLink = (id, startDate, endDate) => {
 
 store.watch(
   (state, getters) => getters["timelapse/times"],
-  // eslint-disable-next-line no-unused-vars
-  _ => {
+  () => {
     // Fetch observations for each datastream again when store.getters["timelapse/times"] array updates.
     store.commit("app/updatingData", {
       updatingData: true

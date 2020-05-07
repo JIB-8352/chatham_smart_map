@@ -69,18 +69,22 @@ const getters = {
           startOfDay(startDate)
         ); // split into minutes instead of days
       }
+
       for (const minuteSplit of VIABLE_MINUTE_SPLITS) {
         for (let j = 1; j < 25; j++) {
           if (j * minuteSplit >= minutesDifference) {
             const midnightStartDay = startOfDay(startDate);
             let workingTime = midnightStartDay;
+
             for (let k = 0; k < j; k++) {
               workingTime = addMinutes(midnightStartDay, minuteSplit * k);
               timeArray[k] = workingTime.toISOString();
             }
+
             if (isToday(endDate)) {
               timeArray.push(endDate.toISOString()); // add exact present time at the end
             }
+
             return timeArray;
           }
         }
@@ -92,27 +96,27 @@ const getters = {
           // splitting timelapse bar itself into fractions
           if ((daysDifference * dayFraction) % j === 0) {
             let workingDate = startDate;
+
             for (let k = 0; k <= j; k++) {
               // populate array of date strings
               workingDate = addHours(startDate, (daysDifference / j) * 24 * k);
               const roundedWorkingDate = startOfHour(workingDate);
               timeArray[k] = roundedWorkingDate.toISOString();
             }
+
             if (isToday(endDate)) {
               timeArray.push(workingDate.toISOString()); // add exact present time at the end
             }
+
             return timeArray;
           }
         }
       }
     }
   },
-  maxVal(state, getters) {
-    return getters.times.length - 1;
-  },
-  displayYear({ startDate, endDate }) {
-    return startDate.getFullYear() !== endDate.getFullYear();
-  },
+  maxVal: (state, getters) => getters.times.length - 1,
+  displayYear: ({ startDate, endDate }) =>
+    startDate.getFullYear() !== endDate.getFullYear(),
   tickLabels({ startDate, endDate }, { maxVal, displayYear }) {
     // we only display the first and the last tick label
     const newLabels = [];
@@ -129,24 +133,20 @@ const getters = {
         displayYear ? TICK_WITH_YEAR_FORMAT : TICK_WO_YEAR_FORMAT
       );
     }
+
     return newLabels;
   },
   // Syntax for using a parameter passed to a getter:
-  getThumbLabel: (state, { times, displayYear }) => val => {
-    return format(
+  getThumbLabel: (state, { times, displayYear }) => val =>
+    format(
       times[val],
       displayYear ? THUMB_WITH_YEAR_FORMAT : THUMB_WO_YEAR_FORMAT
-    );
-  },
-  present({ sliderVal, endDate }, { maxVal }) {
-    // If the timelapse is in "present" mode
-    return sliderVal === maxVal && isToday(endDate);
-  },
-  threshold(state, getters) {
-    return Math.round(
-      0.1 * differenceInMinutes(getters.times[1], getters.times[0])
-    );
-  }
+    ),
+  // If the timelapse is in "present" mode
+  present: ({ sliderVal, endDate }, { maxVal }) =>
+    sliderVal === maxVal && isToday(endDate),
+  threshold: (state, getters) =>
+    Math.round(0.1 * differenceInMinutes(getters.times[1], getters.times[0]))
 };
 
 export default {
