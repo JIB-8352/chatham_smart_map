@@ -25,6 +25,7 @@ export const addCrosshair = (chart, index) => {
     chart.series[0].data[newIndex].setState("hover");
     chart.tooltip.refresh(chart.series[0].data[newIndex]);
   }
+
   return newIndex;
 };
 
@@ -61,6 +62,7 @@ export const tooltipFormatter = ({ series, point }) => {
     xValue = format(point.x, CHART_TOOLTIP_FORMAT);
     yLabel = series.name;
   }
+
   return `
       <div class="tev">
         <span style="font-size: 10px">${xValue}</span><br/>

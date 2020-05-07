@@ -49,19 +49,19 @@ import {
 import { PICKER_FORMAT, PICKER_TEXT_FORMAT } from "@/helpers/constants";
 
 export default {
-  data() {
-    return {
-      /* We want onApply changes to occur if a user closes the date picker by clicking outside, so use
+  data: () => ({
+    /* We want onApply changes to occur if a user closes the date picker by clicking outside, so use
        this variable to track if picker was closed by clicking outside. */
-      applyClicked: false
-    };
-  },
+    applyClicked: false
+  }),
   methods: {
     onApply() {
       // It is possible for startDate to equal endDate, or for endDate to not be defined.
       let startDate = parse(this.dateOne);
       let endDate = parse(this.dateTwo); // not to be confused with this.endDate!
+
       const minutesOffset = differenceInMinutes(new Date(), endDate);
+
       if (isToday(startDate)) {
         startDate = startOfDay(startDate);
         endDate = new Date();
@@ -73,9 +73,11 @@ export default {
         // takes into account cases when minutesOffset is NaN
         endDate = startDate;
       }
+
       this.$store.commit("timelapse/setIsPlaying", { isPlaying: false });
       this.$store.commit("timelapse/setSliderVal", { sliderVal: 0 });
       this.$store.commit("timelapse/setDates", { startDate, endDate });
+
       this.applyClicked = true;
     },
     onClosed() {
@@ -100,9 +102,7 @@ export default {
       this.applyClicked = false;
       this.$store.commit("timelapse/setIsPlaying", { isPlaying: false });
     },
-    formattedDate(date) {
-      return date ? format(date, PICKER_TEXT_FORMAT) : "";
-    },
+    formattedDate: date => (date ? format(date, PICKER_TEXT_FORMAT) : ""),
     ...mapMutations("picker", ["setDateOne", "setDateTwo"])
   },
   computed: {

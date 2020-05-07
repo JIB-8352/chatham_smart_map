@@ -49,14 +49,12 @@ const mutations = {
 };
 
 const getters = {
-  timelapseMode({ layerSelected, sensorIsSelected }) {
-    return layerSelected !== 0 || sensorIsSelected;
-  },
+  timelapseMode: ({ layerSelected, sensorIsSelected }) =>
+    layerSelected !== 0 || sensorIsSelected,
   /* When the app is no longer in timelapseMode, wait for any previously issued data requests to finish
     before the timelapse components can reset - see the watcher in helper.js */
-  reset({ updatingData }, { timelapseMode }) {
-    return !timelapseMode && !updatingData;
-  }
+  reset: ({ updatingData }, { timelapseMode }) =>
+    !timelapseMode && !updatingData
 };
 
 export default {

@@ -22,11 +22,9 @@
 import { mapState, mapGetters } from "vuex";
 
 export default {
-  data() {
-    return {
-      interval: null
-    };
-  },
+  data: () => ({
+    interval: null
+  }),
   methods: {
     getThumbLabel(sliderVal) {
       return this.$store.getters["timelapse/getThumbLabel"](sliderVal);
@@ -73,7 +71,7 @@ export default {
       }
     );
   },
-  mounted: function() {
+  mounted: () => {
     // Create an arrow below the v-slider thumb label
     const node = document.createElement("div");
     node.className = "arrow-down";
