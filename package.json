@@ -8,7 +8,8 @@
     "lint": "vue-cli-service lint",
     "test": "vue-cli-service test:unit --silent",
     "postinstall": "if test \"$NODE_ENV\" = \"production\" ; then yarn run build ; fi ",
-    "start": "node server.js"
+    "start": "node server.js",
+    "vercel-build": "vue-cli-service build"
   },
   "dependencies": {
     "axios": "^0.18.0",
