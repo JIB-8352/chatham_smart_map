@@ -104,7 +104,21 @@ yarn run lint
 
 #### Deploying
 
-Note that by default, the `master` branch of this repository gets deployed to Heroku whenever commits are made to the branch. The app is deployed to [https://chatham-smart-map.herokuapp.com/](https://chatham-smart-map.herokuapp.com/)
+##### Heroku (Legacy)
+Previously, the `master` branch of this repository was deployed to Heroku at [https://chatham-smart-map.herokuapp.com/](https://chatham-smart-map.herokuapp.com/).
+
+##### Vercel (Recommended)
+The repository is now configured for deployment on Vercel, which offers a free tier for hosting static sites and serverless functions.
+
+To deploy to Vercel:
+1. Connect your GitHub repository to Vercel
+2. Configure the project with the following settings:
+   - Framework Preset: Vue.js
+   - Build Command: `yarn build`
+   - Output Directory: dist
+3. Click "Deploy"
+
+For detailed deployment instructions, see the [Vercel Deployment Guide](/docs/vercel-deployment.md).
 
 #### Customize configuration
 
